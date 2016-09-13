@@ -1,0 +1,29 @@
+version: v1alpha2
+defn:
+  name: BranchingGraph
+  description: A task that branches into two separate execution paths, then merges.
+args:
+  inputs:
+    BASE_DIR: REQUIRED
+    stepOne.inputFile: ${BASE_DIR}/input-one.txt
+    stepTwo.inputFile: ${BASE_DIR}/input-two.txt
+    stepThree.inputFile: ${BASE_DIR}/branching/output-one.txt
+  outputs:
+    stepOne.outputFile: ${BASE_DIR}/branching/output-one.txt
+    stepTwo.outputFile: ${BASE_DIR}/branching/output-two.txt
+    stepThree.outputFile: ${BASE_DIR}/branching/output-three.txt
+graph:
+- BRANCH:
+  - stepOne
+  - stepTwo
+- stepThree
+steps: 
+- defn:
+    name: stepOne
+  defnFile: task-one.yaml
+- defn:
+    name: stepTwo
+  defnFile: task-one.yaml
+- defn:
+    name: stepThree
+  defnFile: task-two.yaml

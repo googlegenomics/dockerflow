@@ -1,0 +1,20 @@
+version: v1alpha2
+defn:
+  name: GatherGraph
+  description: An example of doing a gather step after the first task
+args:
+  inputs:
+    BASE_DIR: REQUIRED
+    stepOne.inputFile: ${BASE_DIR}/input-one.txt
+    stepTwo.inputFile: ${stepOne.outputFile}
+  outputs:
+    stepOne.outputFile: output-one.txt
+    stepTwo.outputFile: output-two.txt
+steps: 
+- defn:
+    name: stepOne
+  defnFile: task-one.yaml
+  gatherBy: inputFile
+- defn:
+    name: stepTwo
+  defnFile: task-two.yaml

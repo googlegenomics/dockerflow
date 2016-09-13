@@ -1,0 +1,56 @@
+version: v1alpha2
+defn:
+  name: LinearGraph
+  description: A simple linear graph.
+args:
+  inputs:
+    BASE_DIR: REQUIRED
+steps: 
+- defn:
+    name: stepOne
+    inputParameters:
+    - name: inputFile
+      defaultValue: ${BASE_DIR}/input-one.txt
+      localCopy:
+        disk: datadisk
+        path: in.txt
+    - name: message
+      defaultValue: hello
+    outputParameters:
+    - name: outputFile
+      defaultValue: ${BASE_DIR}/linear/output-one.txt
+      localCopy:
+        disk: datadisk
+        path: out.txt
+    resources:
+      disks:
+      - name: datadisk
+        type: PERSISTENT_HDD
+        mountPoint: /mnt/data
+    docker:
+      imageName: ubuntu
+      cmd: "cp /mnt/data/in.txt /mnt/data/out.txt; echo ${message} >> /mnt/data/out.txt"
+- defn:
+    name: stepTwo
+    inputParameters:
+    - name: inputFile
+      defaultValue: ${BASE_DIR}/linear/output-one.txt
+      localCopy:
+        disk: datadisk
+        path: in.txt
+    - name: message
+      defaultValue: goodbye
+    outputParameters:
+    - name: outputFile
+      defaultValue: ${BASE_DIR}/linear/output-two.txt
+      localCopy:
+        disk: datadisk
+        path: out.txt
+    resources:
+      disks:
+      - name: datadisk
+        type: PERSISTENT_HDD
+        mountPoint: /mnt/data
+    docker:
+      imageName: ubuntu
+      cmd: "cp /mnt/data/in.txt /mnt/data/out.txt; echo ${message} >> /mnt/data/out.txt"

@@ -1,0 +1,53 @@
+version: v1alpha2
+defn:
+  name: CWL_Test
+steps:
+- defn:
+    name: SimpleTask
+    inputParameters:
+    - name: inputFile
+      localCopy:
+        disk: datadisk
+        path: in.txt
+    - name: string
+      type: string[]
+      defaultValue: onetwothree
+      inputBinding:
+        prefix: "-k "
+        itemSeparator: " -k "
+        separate: true
+        position: 3
+    - name: bool
+      type: boolean
+      inputBinding:
+        position: 2
+        prefix: -b
+    - name: message
+      defaultValue: ${ 1+ ${size} }
+    - name: array
+      type: array
+      defaultValue: one two
+      inputBinding:
+        prefix: "-a "
+        itemSeparator: " -a "
+        separate: true
+        position: 1
+    - name: file
+      type: File
+      inputBinding:
+        position: 4
+        prefix: "--file="
+        separate: false
+    outputParameters:
+    - name: outputFile
+      localCopy:
+        disk: datadisk
+        path: out.txt
+    docker:
+      imageName: ubuntu
+      cmd: "echo"
+  args:
+    inputs:
+      string: five six seven
+      file: gs://b/d/test.txt
+      size: 4

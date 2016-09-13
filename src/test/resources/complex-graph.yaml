@@ -1,0 +1,80 @@
+version: v1alpha2
+defn:
+  name: ComplexGraph
+  description: A more complex directed acyclic graph.
+graph:
+- one
+- BRANCH:
+  - BRANCH:
+    - - two
+      - three
+    - four
+  - - five
+    - six
+    - seven
+- eight
+steps:
+- defn:
+    name: one
+    inputParameters:
+    - name: msg
+      defaultValue: one
+    docker:
+      imageName: ubuntu
+      cmd: "echo Task=${msg}"
+- defn:
+    name: two
+    inputParameters:
+    - name: msg
+      defaultValue: two
+    docker:
+      imageName: ubuntu
+      cmd: "echo Task=${msg}"
+- defn:
+    name: three
+    inputParameters:
+    - name: msg
+      defaultValue: three
+    docker:
+      imageName: ubuntu
+      cmd: "echo Task=${msg}"
+- defn:
+    name: four
+    inputParameters:
+    - name: msg
+      defaultValue: four
+    docker:
+      imageName: ubuntu
+      cmd: "echo Task=${msg}"
+- defn:
+    name: five
+    inputParameters:
+    - name: msg
+      defaultValue: five
+    docker:
+      imageName: ubuntu
+      cmd: "echo Task=${msg}"
+- defn:
+    name: six
+    inputParameters:
+    - name: msg
+      defaultValue: six
+    docker:
+      imageName: ubuntu
+      cmd: "echo Task=${msg}"
+- defn:
+    name: seven
+    inputParameters:
+    - name: msg
+      defaultValue: seven
+    docker:
+      imageName: ubuntu
+      cmd: "echo Task=${msg}"
+- defn:
+    name: eight
+    inputParameters:
+    - name: msg
+      defaultValue: eight
+    docker:
+      imageName: ubuntu
+      cmd: "echo Task=${msg}"

@@ -1,0 +1,22 @@
+version: v1alpha2
+defn:
+  name: ParameterSubstitution
+  description: Replace variables with command-line parameters.
+args:
+  inputs:
+    BASE_DIR: REQUIRED
+    stepOne.inputFile: ${BASE_DIR}/input-one.txt
+    stepTwo.inputFile: ${BASE_DIR}/output-one.txt
+  outputs:
+    stepOne.outputFile: ${BASE_DIR}/output-one.txt
+    stepTwo.outputFile: ${BASE_DIR}/output-two.txt
+graph: 
+- stepOne  
+- stepTwo
+steps: 
+- defn:
+    name: stepOne
+  defnFile: task-one.yaml
+- defn:
+    name: stepTwo
+  defnFile: task-two.yaml

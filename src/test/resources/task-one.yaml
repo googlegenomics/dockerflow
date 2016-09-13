@@ -1,0 +1,33 @@
+name: TaskOne
+description: Copy a file and append a message to the end
+inputParameters:
+- name: inputFile
+  localCopy:
+    disk: datadisk
+    path: in.txt
+- name: message
+  defaultValue: hello
+outputParameters:
+- name: outputFile
+  localCopy:
+    disk: datadisk
+    path: out.txt
+resources:
+  minimumCpuCores: 1
+  minimumRamGb: 1
+  zones:
+  - us-central1-a
+  - us-central1-b
+  - us-central1-c
+  - us-central1-f
+  - us-east1-b
+  - us-east1-c
+  - us-east1-d
+  disks:
+  - name: datadisk
+    type: PERSISTENT_HDD
+    sizeGb: 100
+    mountPoint: /mnt/data
+docker:
+  imageName: ubuntu
+  cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"

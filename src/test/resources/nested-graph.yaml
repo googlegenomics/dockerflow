@@ -1,0 +1,20 @@
+version: v1alpha2
+defn:
+  name: NestedGraph
+  description: A workflow graph that imports another graph as a workflow step.
+args:
+  inputs:
+    BASE_DIR: REQUIRED
+    stepThree.inputFile: ${stepTwo.outputFile}
+  outputs: 
+    stepThree.outputFile: output-three.txt
+graph: 
+- stepZero
+- stepThree
+steps: 
+- defn:
+    name: stepZero 
+  workflowDefnFile: linear-graph.yaml
+- defn:
+    name: stepThree
+  defnFile: task-one.yaml

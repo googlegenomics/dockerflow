@@ -1,0 +1,3 @@
+"<TaskOne.inputFile",">TaskOne.outputFile","<TaskTwo.inputFile",">TaskTwo.outputFile","TaskOne.message","TaskTwo.message"
+"../../input-one.txt","output-one.txt","../TaskOne/output-one.txt","output-two.txt","hello","goodbye"
+"../../input-two.txt","output-one.txt","../TaskOne/output-one.txt","output-two.txt","goodbye","hello"

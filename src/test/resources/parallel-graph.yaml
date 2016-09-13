@@ -1,0 +1,17 @@
+version: v1alpha2
+defn:
+  name: ParallelGraph
+  description: A simple file-parallel graph
+args:
+  inputs:
+    BASE_DIR: REQUIRED
+    stepOne.inputFile: |
+      ${BASE_DIR}/input-one.txt
+      ${BASE_DIR}/input-two.txt
+  outputs: 
+    stepOne.outputFile: output-one.txt
+steps: 
+- defn:
+    name: stepOne
+  defnFile: task-one.yaml
+  scatterBy: inputFile

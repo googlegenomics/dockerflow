@@ -1,0 +1,22 @@
+version: v1alpha2
+defn:
+  name: ReorderedGraph
+  description: A simple linear graph, with task steps listed out of order.
+args:
+  inputs:
+    BASE_DIR: REQUIRED
+    stepOne.inputFile: ${BASE_DIR}/reordered/output-two.txt
+    stepTwo.inputFile: ${BASE_DIR}/input-two.txt
+  outputs: 
+    stepOne.outputFile: ${BASE_DIR}/reordered/output-one.txt
+    stepTwo.outputFile: ${BASE_DIR}/reordered/output-two.txt
+graph: 
+- stepTwo  
+- stepOne  
+steps: 
+- defn:
+    name: stepOne
+  defnFile: task-one.yaml
+- defn:
+    name: stepTwo
+  defnFile: task-two.yaml
