@@ -34,7 +34,7 @@ Workflow Language]
 
 *   [Prerequisites](#prerequisites)
 *   [Getting started](#getting-started)
-*   [Docker + Dataflow vs custom scripts](#docker-dataflow-vs-custom-scripts)
+*   [Docker + Dataflow vs custom scripts](#docker--dataflow-vs-custom-scripts)
 *   [Creating your own workflows](#creating-your-own-workflows)
     *   [Defining tasks](#defining-tasks)
     *   [Sequential workflows](#sequential-workflows)
@@ -90,22 +90,24 @@ remove the `--runner` option to use the default Dataflow runner.
 
 How is Dataflow better than a shell script?
 
-Dataflow provides: * **Complex workflow orchestration**: Dataflow supports
-arbitrary directed acyclic graphs. The logic of branching, merging,
-parallelizing, and monitoring is all handled automatically. * **Monitoring**:
-[Dataflow's monitoring UI]
-(https://cloud.google.com/dataflow/pipelines/dataflow-monitoring-intf) shows you
-what jobs you've run and shows an execution graph with nice details. *
-**Debugging**: Dataflow keeps logs at each step, and you can view them directly
-in the UI. * **Task retries**: Dataflow automatically retries failed steps.
-Dockerflow adds support for preemptible VMs, rerunning failures on standard VM
-instances. * **Parallelization**: Dataflow can run 100 tasks on 100 files and
-keep track of them all for you, retrying any steps that failed. *
-**Optimization**: Dataflow optimizes the execution graph for your workflow.
+Dataflow provides: 
 
-Docker provides: * **Portability**: Tools packaged in Docker images can be run
-anywhere Docker is supported. * **A library of pre-packaged tools**: The
-community has contributed a growing library of popular tools.
+*   **Complex workflow orchestration**: Dataflow supports
+    arbitrary directed acyclic graphs. The logic of branching, merging,
+    parallelizing, and monitoring is all handled automatically. 
+*   **Monitoring**: [Dataflow's monitoring UI]
+    (https://cloud.google.com/dataflow/pipelines/dataflow-monitoring-intf) shows you
+    what jobs you've run and shows an execution graph with nice details. 
+*   **Debugging**: Dataflow keeps logs at each step, and you can view them directly in the UI. 
+*   **Task retries**: Dataflow automatically retries failed steps.
+    Dockerflow adds support for preemptible VMs, rerunning failures on standard VM instances. 
+*   **Parallelization**: Dataflow can run 100 tasks on 100 files and
+    keep track of them all for you, retrying any steps that failed. 
+*   **Optimization**: Dataflow optimizes the execution graph for your workflow.
+
+Docker provides: 
+*   **Portability**: Tools packaged in Docker images can be run anywhere Docker is supported. 
+*   **A library of pre-packaged tools**: The community has contributed a growing library of popular tools.
 
 ## Creating your own workflows
 
