@@ -61,7 +61,8 @@ public class Dockerflow implements DockerflowConstants {
               + " [options]\n"
               + "\n"
               + "Description:\n"
-              + "Run a workflow of Docker tasks defined in Java or yaml/json, using Dataflow for orchestration.\n"
+              + "Run a workflow of Docker tasks defined in Java or yaml/json, using Dataflow "
+              + "for orchestration.\n"
               + "\nOPTIONS:\n"
               + "--"
               + PROJECT
@@ -98,7 +99,8 @@ public class Dockerflow implements DockerflowConstants {
               + "--"
               + ARGS_FILE
               + "=PATH\n"
-              + "Workflow args in yaml/json in GCS or local. Or a csv with one run per row and param names in columns.\n\n"
+              + "Workflow args in yaml/json in GCS or local. Or a csv with one run per row "
+              + "and param names in columns.\n\n"
               + "--"
               + WORKSPACE
               + "=PATH\n"

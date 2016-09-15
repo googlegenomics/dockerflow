@@ -217,9 +217,8 @@ public class Workflow extends Task {
       if (w.getDefn() != null && (w.getSteps() == null || w.getSteps().isEmpty())) {
         LOG.info("Add workflow to graph: " + w.getDefn().getName());
         graph.getSteps().add(w);
-      }
       // It's a DAG defined in code
-      else if (w.dag != null) {
+      } else if (w.dag != null) {
         return w.getDAG();
       } else {
         // No DAG defined; run steps in order
@@ -261,9 +260,8 @@ public class Workflow extends Task {
 
         // The step might be an individual task or a whole workflow
         subgraph = tasks.getSteps().size() == 1 ? tasks.getSteps().get(0) : tasks;
-      }
       // Branch to multiple parallel steps
-      else if (isBranch(graphElement)) {
+      } else if (isBranch(graphElement)) {
         LOG.info("Subgraph is a BRANCH");
 
         Branch branch = new Branch();
@@ -280,9 +278,8 @@ public class Workflow extends Task {
           newBranches.add(subgraph(subnode, workflow));
         }
         subgraph = branch;
-      }
       // It's an edge. Add a subsequence of steps
-      else if (graphElement instanceof List) {
+      } else if (graphElement instanceof List) {
         List<GraphItem> steps = new ArrayList<GraphItem>();
         Steps g = new Steps();
         g.setSteps(steps);

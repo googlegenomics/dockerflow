@@ -16,18 +16,18 @@
 package com.google.cloud.genomics.dockerflow.args;
 
 import com.google.cloud.genomics.dockerflow.TestUtils;
-import com.google.cloud.genomics.dockerflow.args.ArgsTableBuilder;
-import com.google.cloud.genomics.dockerflow.args.WorkflowArgs;
 import com.google.cloud.genomics.dockerflow.util.StringUtils;
-
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Map;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Test running with multiple input parameter sets.
+ */
 public class ArgsTableBuilderTest {
   private static final Logger LOG = LoggerFactory.getLogger(ArgsTableBuilderTest.class);
 

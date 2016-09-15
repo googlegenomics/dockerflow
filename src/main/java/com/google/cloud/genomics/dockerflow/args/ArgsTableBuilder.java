@@ -99,9 +99,8 @@ public class ArgsTableBuilder implements DockerflowConstants {
 
     if (file.toLowerCase().endsWith(".csv")) {
       b.table = loadCsv(file);
-    }
     // Parse from yaml/json
-    else {
+    } else {
       WorkflowArgs wa = FileUtils.parseFile(file, WorkflowArgs.class);
       b.table = new HashMap<String, WorkflowArgs>();
       b.table.put(file, wa);

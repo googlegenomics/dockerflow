@@ -24,6 +24,9 @@ import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utilities for REST calls.
+ */
 public class HttpUtils {
   static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
 

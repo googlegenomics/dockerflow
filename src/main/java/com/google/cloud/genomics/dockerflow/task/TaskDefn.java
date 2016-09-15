@@ -207,6 +207,9 @@ public class TaskDefn implements Serializable {
     this.docker = docker;
   }
 
+  /**
+   * Resources.
+   */
   public static class Resources implements Serializable {
     private String bootDiskSizeGb;
     private String minimumCpuCores;
@@ -311,6 +314,9 @@ public class TaskDefn implements Serializable {
     }
   }
 
+  /**
+   * Docker image and command.
+   */
   public static class Docker implements Serializable {
     private String imageName;
     private String cmd;
@@ -339,6 +345,9 @@ public class TaskDefn implements Serializable {
     }
   }
 
+  /**
+   * Disk.
+   */
   public static class Disk implements Serializable {
     private String name;
     private String type;
@@ -427,6 +436,9 @@ public class TaskDefn implements Serializable {
     }
   }
 
+  /**
+   * Task parameters.
+   */
   public static class Param implements Serializable {
     public static final String TYPE_ARRAY = "array";
     public static final String ARRAY_DELIMITER_REGEX = "\\s+";
@@ -466,9 +478,8 @@ public class TaskDefn implements Serializable {
           throw new IllegalStateException(
               "Invalid json array for parameter \"" + name + "\": " + value);
         }
-      }
       // If not, assume it's a delimited list
-      else {
+      } else {
         array = value.replace("\\n", " ").split(ARRAY_DELIMITER_REGEX);
       }
       return array;
@@ -492,9 +503,8 @@ public class TaskDefn implements Serializable {
         retval = inputBinding.getPrefix();
       } else if (type == null || value == null) {
         retval = value;
-      }
       // Other CWL stuff
-      else {
+      } else {
         StringBuilder sb = new StringBuilder();
 
         if (inputBinding.getPrefix() != null) {
@@ -519,9 +529,8 @@ public class TaskDefn implements Serializable {
               }
             }
           }
-        }
         // All other parameters
-        else {
+        } else {
           sb.append(value);
         }
         retval = sb.toString();
@@ -586,6 +595,9 @@ public class TaskDefn implements Serializable {
     }
   }
 
+  /**
+   * Sort by position in the command-line.
+   */
   public static class ParamComparator implements Comparator<Param> {
 
     @Override
@@ -644,6 +656,9 @@ public class TaskDefn implements Serializable {
     }
   }
 
+  /**
+   * For file staging.
+   */
   public static class LocalCopy implements Serializable {
     private String disk;
     private String path;

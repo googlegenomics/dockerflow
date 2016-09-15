@@ -15,8 +15,6 @@
  */
 package com.google.cloud.genomics.dockerflow.examples;
 
-import static org.junit.Assert.*;
-
 import com.google.cloud.genomics.dockerflow.DockerflowConstants;
 import com.google.cloud.genomics.dockerflow.TestUtils;
 import com.google.cloud.genomics.dockerflow.args.ArgsBuilder;
@@ -28,6 +26,8 @@ import com.google.cloud.genomics.dockerflow.task.TaskBuilder;
 import com.google.cloud.genomics.dockerflow.util.StringUtils;
 import com.google.cloud.genomics.dockerflow.workflow.Workflow;
 import com.google.cloud.genomics.dockerflow.workflow.WorkflowFactory;
+
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import org.junit.BeforeClass;

@@ -71,6 +71,9 @@ public class Operation implements Serializable {
     this.response = response;
   }
 
+  /**
+   * Status.
+   */
   public class Status implements Serializable {
     private Integer code;
     private String message;

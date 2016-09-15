@@ -124,9 +124,8 @@ public class WorkflowFactory implements DockerflowConstants {
           defn.setName(step.getDefn().getName());
         }
         step.setDefn(defn);
-      }
       // Inject a workflow from file
-      else if (step.getWorkflowDefnFile() != null) {
+      } else if (step.getWorkflowDefnFile() != null) {
         String wfile = FileUtils.resolve(step.getWorkflowDefnFile(), path);
         step.setWorkflowDefnFile(wfile);
         LOG.info("Load nested workflow file: " + wfile);
@@ -208,9 +207,8 @@ public class WorkflowFactory implements DockerflowConstants {
     // Load workflow from file
     if (m.containsKey(WORKFLOW_FILE)) {
       w = TaskBuilder.fromFile(m.get(WORKFLOW_FILE)).build();
-    }
     // Load a single task workflow
-    else if (m.containsKey(TASK_FILE)) {
+    } else if (m.containsKey(TASK_FILE)) {
       w = TaskBuilder.fromTaskDefnFile(m.get(TASK_FILE)).build();
     } else {
       throw new IllegalArgumentException(

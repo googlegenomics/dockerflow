@@ -65,9 +65,8 @@ public class MergeBranches
         if (retval == null) {
           key = kv.getKey();
           retval = wa;
-        }
         // Find differences and merge
-        else {
+        } else {
           retval.gatherArgs(wa);
         }
       }

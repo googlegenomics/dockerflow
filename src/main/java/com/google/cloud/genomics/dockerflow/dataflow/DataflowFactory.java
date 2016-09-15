@@ -177,14 +177,12 @@ public class DataflowFactory implements DockerflowConstants {
 
       LOG.info("Adding task: " + w.getDefn().getName());
       output = input.apply(DockerDo.of(w));
-    }
     // It's a branch
-    else if (graphItem instanceof Branch) {
+    } else if (graphItem instanceof Branch) {
       LOG.info("Pipeline splits into branches. Adding branches");
       output = branches(((Branch) graphItem), input);
-    }
     // It's an edge
-    else if (graphItem instanceof Steps) {
+    } else if (graphItem instanceof Steps) {
       LOG.info("Adding steps");
       Steps steps = (Steps) graphItem;
 
