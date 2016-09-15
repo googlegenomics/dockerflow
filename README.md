@@ -67,7 +67,7 @@ Run the following steps on your laptop or local workstation:
 
 1.  git clone this repository.
     
-        git clone https://github.com/googlegenomics/dockerflow
+        git clone https://github.com/googlegenomics/dockerflow  
     
 2.  Build it with Maven.
 
