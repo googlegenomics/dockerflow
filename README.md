@@ -11,11 +11,11 @@ Docker steps are run using the [Pipelines API](https://cloud.google.com/genomics
 Dockerflow workflows can be defined in [YAML](http://yaml.org) files, or by writing
 Java code. Examples of workflows defined in YAML can be found in
 
-    src/test/resources.
+*   [src/test/resources](src/test/resources)
 
 Examples of workflows defined in Java can be found in
 
-    src/test/java/com/google/cloud/genomics/dockerflow/examples. 
+*   [src/test/java/com/google/cloud/genomics/dockerflow/examples](src/test/java/com/google/cloud/genomics/dockerflow/examples)
     
 You can run a batch of workflows at once by providing a csv file with one row per
 workflow to define the parameters.
@@ -124,7 +124,7 @@ or the Java class name of a Java definition.
 
 If you'd rather define workflows in code, you'll use the Java SDK. See
 
-    src/test/java/com/google/cloud/genomics/dockerflow/examples
+*   [src/test/java/com/google/cloud/genomics/dockerflow/examples](src/test/java/com/google/cloud/genomics/dockerflow/examples)
     
 Everything that can be done with YAML can also be done (and more compactly) in
 Java code. Java provides greater flexibility too.
@@ -245,7 +245,7 @@ See the section on [passing parameters](#passing-parameters) for more details.
 There's also a corresponding `gatherBy` attribute so that you can gather the
 outputs of multiple parallel tasks into arrays of file paths. For an example, see:
 
-    src/test/resources/gather-graph.yaml
+*   [src/test/resources/gather-graph.yaml](src/test/resources/gather-graph.yaml)
 
 ### Branching workflows
 
