@@ -42,7 +42,7 @@ Workflow Language]
 
 *   [Prerequisites](#prerequisites)
 *   [Getting started](#getting-started)
-*   [Docker + Dataflow vs custom scripts](#docker-dataflow-vs-custom-scripts)
+*   [Docker + Dataflow vs custom scripts](#docker--dataflow-vs-custom-scripts)
 *   [Creating your own workflows](#creating-your-own-workflows)
     *   [Sequential workflows](#sequential-workflows)
     *   [Parallel workflows](#parallel-workflows)
