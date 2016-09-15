@@ -243,7 +243,9 @@ includes the task name, `parallelTask`.
 See the section on [passing parameters](#passing-parameters) for more details.
 
 There's also a corresponding `gatherBy` attribute so that you can gather the
-outputs of multiple parallel tasks into arrays of file paths.
+outputs of multiple parallel tasks into arrays of file paths. For an example, see:
+
+    src/test/resources/gather-graph.yaml
 
 ### Branching workflows
 
