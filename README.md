@@ -108,7 +108,7 @@ Dockerflow adds support for preemptible VMs, rerunning failures on standard VM
 instances.
 *   **Parallelization**: Dataflow can run 100 tasks on 100 files and
 keep track of them all for you, retrying any steps that failed.
-*  **Optimization**: Dataflow optimizes the execution graph for your workflow.
+*   **Optimization**: Dataflow optimizes the execution graph for your workflow.
 
 Docker provides:
 
