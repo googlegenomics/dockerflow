@@ -59,7 +59,7 @@ Workflow Language]
     for Cloud Dataflow, Google Genomics, Compute Engine and Cloud Storage.\
 3.  [Install the Google Cloud SDK](https://cloud.google.com/sdk/) and run
 
-    gcloud init
+        gcloud init
 
 ## Getting started
 
@@ -67,20 +67,20 @@ Run the following steps on your laptop or local workstation:
 
 1.  git clone this repository.
     
-    git clone https://github.com/googlegenomics/dockerflow
+        git clone https://github.com/googlegenomics/dockerflow  
     
 2.  Build it with Maven.
 
-    cd dockerflow 
-    mvn package -DskipITs
+        cd dockerflow 
+        mvn package -DskipITs
 
 3.  Run a sample workflow:
 
-    java -jar target/dockerflow*dependencies.jar \
-    --project=MY-PROJECT \
-    --workflow-file=src/test/resources/linear-graph.yaml \
-    --workspace=gs://MY-BUCKET/MY-PATH \
-    --runner=DirectPipelineRunner
+        java -jar target/dockerflow*dependencies.jar \
+        --project=MY-PROJECT \
+        --workflow-file=src/test/resources/linear-graph.yaml \
+        --workspace=gs://MY-BUCKET/MY-PATH \
+        --runner=DirectPipelineRunner
 
 Set `MY-PROJECT` to your cloud project name, and set `MY-BUCKET` and `MY-PATH`
 to your cloud bucket and folder.
