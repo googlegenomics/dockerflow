@@ -126,7 +126,7 @@ public class TaskRunner implements DockerflowConstants {
    * with standard json serializers.
    */
   @SuppressWarnings("serial")
-  static public class TaskRequest implements Serializable {
+  public static class TaskRequest implements Serializable {
     private String pipelineId;
     private TaskDefn ephemeralPipeline;
     private TaskArgs pipelineArgs;

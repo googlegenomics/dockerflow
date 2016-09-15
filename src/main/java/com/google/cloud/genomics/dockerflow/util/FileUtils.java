@@ -165,11 +165,10 @@ public class FileUtils {
     // If multiple files, store in the root of the mounted drive
     if (gcsPath.indexOf("*") > 0 || gcsPath.split("\\s+").length > 1) {
       localPath = "";
-    }
     // Otherwise store by the input file name, prefixed with a hashcode
     // for the parent path, so files in the same directory preserve name relations.
     // Eg, file.tar and file.tar.gz.
-    else {
+    } else {
       String dir = gcsPath.contains("/") ? gcsPath.substring(0, gcsPath.lastIndexOf("/")) : gcsPath;
       localPath =
           String.valueOf(dir.hashCode()).replace("-", "")

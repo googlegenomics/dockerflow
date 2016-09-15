@@ -213,17 +213,16 @@ public class Task implements Serializable, GraphItem {
         for (Disk d : defn.getResources().getDisks()) {
           d.setSizeGb(val);
         }
-      }
       // Include it in the args even if it wasn't before
-      else {
+      } else {
         if (defn.getInput(name) != null) {
-          if(args.getInputs() == null) {
-            args.setInputs(new LinkedHashMap<String,String>());
+          if (args.getInputs() == null) {
+            args.setInputs(new LinkedHashMap<String, String>());
           }
           args.getInputs().put(name, val);
         } else if (defn.getOutput(name) != null) {
           if (args.getOutputs() == null) {
-            args.setOutputs(new LinkedHashMap<String,String>());
+            args.setOutputs(new LinkedHashMap<String, String>());
           }
           args.getOutputs().put(name, val);
         }          
@@ -376,9 +375,8 @@ public class Task implements Serializable, GraphItem {
         // An array; special handling
         if (p.isArray()) {
           expandArray(p);
-        }
         // Ordinary path
-        else {
+        } else {
           LOG.debug("Normal file: " + p.getName() + ", path: " + val);
           p.getLocalCopy().setPath(FileUtils.localPath(val));
         }
@@ -427,10 +425,7 @@ public class Task implements Serializable, GraphItem {
         continue;
       }
 
-      try {
-        LOG.debug(StringUtils.toJson(p));
-      } catch (IOException e) {
-      }
+      LOG.debug(StringUtils.toJson(p));
 
       // Arrays are more complicated
       String separator;
@@ -439,9 +434,8 @@ public class Task implements Serializable, GraphItem {
         allVals = p.split(path);
         separator = " ";
         LOG.debug("It's an array. Values: " + allVals.length);
-      }
       // Scatter-by fields are newline delimited
-      else {
+      } else {
         allVals = path.split(REGEX_FOR_SCATTER);
         separator = "\n";
       }

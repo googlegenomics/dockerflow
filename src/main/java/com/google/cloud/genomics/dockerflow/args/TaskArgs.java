@@ -1,17 +1,15 @@
 /*
  * Copyright 2016 Google.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.google.cloud.genomics.dockerflow.args;
 
@@ -141,11 +139,8 @@ public class TaskArgs implements Serializable {
       if (a.getResources().getZones() == null) {
         resources.setZones(new ArrayList<String>());
       } else {
-        resources.setZones(
-            WorkflowFactory.expandZones(
-                a.getResources()
-                    .getZones()
-                    .toArray(new String[a.getResources().getZones().size()])));
+        resources.setZones(WorkflowFactory.expandZones(
+            a.getResources().getZones().toArray(new String[a.getResources().getZones().size()])));
       }
       resources.setPreemptible(a.getResources().getPreemptible());
       resources.setMinimumCpuCores(a.getResources().getMinimumCpuCores());
@@ -166,7 +161,7 @@ public class TaskArgs implements Serializable {
 
     if (defaults.getInputs() != null) {
       LinkedHashMap<String, String> mergedInputs = new LinkedHashMap<String, String>();
-      
+
       // Defaults come first
       if (defaults.getInputs() != null) {
         mergedInputs.putAll(defaults.getInputs());
@@ -177,13 +172,13 @@ public class TaskArgs implements Serializable {
       }
       Map<String, String> old = inputs;
       inputs = mergedInputs;
-      
+
       // Do variable substitution of the defaults
       substitute(old);
     }
     if (defaults.getOutputs() != null) {
       LinkedHashMap<String, String> mergedOutputs = new LinkedHashMap<String, String>();
-      
+
       // Defaults come first
       if (defaults.getOutputs() != null) {
         mergedOutputs.putAll(defaults.getOutputs());
@@ -194,7 +189,7 @@ public class TaskArgs implements Serializable {
       }
       Map<String, String> old = outputs;
       outputs = mergedOutputs;
-      
+
       // Do variable substitution of the defaults
       substitute(old);
     }
@@ -226,10 +221,12 @@ public class TaskArgs implements Serializable {
       if (defaults.getResources().getPreemptible() != null) {
         resources.setPreemptible(defaults.getResources().getPreemptible());
       }
-      if (defaults.getResources().getZones() != null && !defaults.getResources().getZones().isEmpty()) {
+      if (defaults.getResources().getZones() != null
+          && !defaults.getResources().getZones().isEmpty()) {
         resources.setZones(defaults.getResources().getZones());
       }
-      if (defaults.getResources().getDisks() != null && !defaults.getResources().getDisks().isEmpty()) {
+      if (defaults.getResources().getDisks() != null
+          && !defaults.getResources().getDisks().isEmpty()) {
         resources.setDisks(defaults.getResources().getDisks());
       }
       if (defaults.getResources().getMinimumCpuCores() != null) {
@@ -249,9 +246,8 @@ public class TaskArgs implements Serializable {
       if (!contains(param)) {
         LOG.info("Adding missing arg: " + param + " with value: " + ta.get(param));
         set(param, ta.get(param));
-      }
       // Concatenate values of the same arg in order
-      else if (!get(param).equals(ta.get(param))) {
+      } else if (!get(param).equals(ta.get(param))) {
         LOG.info("Combining args: " + param + " with value: " + ta.get(param));
         set(param, get(param) + "\n" + ta.get(param));
       }
@@ -391,6 +387,9 @@ public class TaskArgs implements Serializable {
     this.fromFile = fromFile;
   }
 
+  /**
+   * Logging.
+   */
   public static class Logging implements Serializable {
     private String gcsPath;
 
@@ -409,6 +408,9 @@ public class TaskArgs implements Serializable {
     }
   }
 
+  /**
+   * Service account.
+   */
   public static class ServiceAccount implements Serializable {
     private String email;
     private List<String> scopes;

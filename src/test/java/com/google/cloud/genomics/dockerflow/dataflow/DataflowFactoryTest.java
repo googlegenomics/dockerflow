@@ -18,8 +18,8 @@ package com.google.cloud.genomics.dockerflow.dataflow;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.dataflow.sdk.Pipeline;
+import com.google.cloud.genomics.dockerflow.DockerflowConstants;
 import com.google.cloud.genomics.dockerflow.TestUtils;
-import com.google.cloud.genomics.dockerflow.dataflow.DataflowFactory;
 import com.google.cloud.genomics.dockerflow.runner.TaskRunner.TaskRequest;
 import com.google.cloud.genomics.dockerflow.task.TaskDefn;
 import com.google.cloud.genomics.dockerflow.util.FileUtils;
@@ -33,7 +33,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DataflowFactoryTest {
+/**
+ * Unit tests for parsing workflows and 
+ */
+public class DataflowFactoryTest implements DockerflowConstants {
   private static final Logger LOG = LoggerFactory.getLogger(DataflowFactoryTest.class);
   private static TestUtils utils = new TestUtils();
 
@@ -71,10 +74,10 @@ public class DataflowFactoryTest {
     Workflow w = WorkflowFactory.load(utils.baseDir + "/linear-graph.yaml");
     Pipeline p = DataflowFactory.dataflow(w, null, DataflowFactory.pipelineOptions(
         new String[] {
-            "--project=" + TestUtils.TEST_PROJECT,
-            "--stagingLocation=" + utils.baseDir + "/dataflow",
-            "--logging=" + utils.baseDir + "/dlinear",
-            "--runner=" + utils.runner
+            "--" + PROJECT + "=" + TestUtils.TEST_PROJECT,
+            "--" + STAGING + "=" + utils.baseDir + "/dataflow",
+            "--" + LOGGING + "=" + utils.baseDir + "/dlinear",
+            "--" + RUNNER + "=" + utils.runner
             }
     ));
     LOG.info("Created dataflow pipeline: " + p);
@@ -85,10 +88,10 @@ public class DataflowFactoryTest {
     Workflow w = WorkflowFactory.load(utils.baseDir + "/branching-graph.yaml");
     Pipeline p = DataflowFactory.dataflow(w, null, DataflowFactory.pipelineOptions(
         new String[] {
-            "--project=" + TestUtils.TEST_PROJECT,
-            "--stagingLocation=" + utils.baseDir + "/dataflow",
-            "--logging=" + utils.baseDir + "/dlinear",
-            "--runner=" + utils.runner
+            "--" + PROJECT + "=" + TestUtils.TEST_PROJECT,
+            "--" + STAGING + "=" + utils.baseDir + "/dataflow",
+            "--" + LOGGING + "=" + utils.baseDir + "/dlinear",
+            "--" + RUNNER + "=" + utils.runner
             }
     ));
     LOG.info("Created dataflow pipeline: " + p);

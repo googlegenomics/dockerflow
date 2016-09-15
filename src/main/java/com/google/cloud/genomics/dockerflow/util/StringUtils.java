@@ -24,6 +24,9 @@ import java.util.Map;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+/**
+ * Utilities for parsing and formatting strings.
+ */
 public class StringUtils {
 
   /**
@@ -72,7 +75,7 @@ public class StringUtils {
   }
 
   /** Serialize to json. */
-  public static String toJson(Object o) throws IOException {
+  public static String toJson(Object o) {
     FileUtils.LOG.debug("Serializing to json: " + (o == null ? null : o.getClass()));
     // For non-auto-generated Google Java classes, Gson is required;
     // otherwise the serialized string is empty.

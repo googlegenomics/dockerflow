@@ -47,10 +47,8 @@ public class DeleteIntermediateFiles
 
     String key = c.element().getKey();
     WorkflowArgs wa = new WorkflowArgs(c.element().getValue());
-    try {
-      LOG.info(StringUtils.toJson(wa));
-    } catch (Exception e) {
-    }
+    LOG.info(StringUtils.toJson(wa));
+
     Task t = new Task(task);
     t.substitute(wa.getInputs());
     t.substitute(wa.getOutputs());
@@ -60,10 +58,7 @@ public class DeleteIntermediateFiles
     if (t.getArgs() != null && t.getArgs().getOutputs() != null) {
       toRetain.putAll(t.getArgs().getOutputs());
     }
-    try {
-      LOG.info("Files to keep:\n" + StringUtils.toJson(toRetain));
-    } catch (IOException e) {
-    }
+    LOG.info("Files to keep:\n" + StringUtils.toJson(toRetain));
 
     LOG.info("Finding intermediate files to delete");
     Map<String, String> toDelete = new LinkedHashMap<String, String>();
@@ -84,10 +79,7 @@ public class DeleteIntermediateFiles
       }
     }
 
-    try {
-      LOG.info("Files to delete:\n" + StringUtils.toJson(toDelete));
-    } catch (IOException e) {
-    }
+    LOG.info("Files to delete:\n" + StringUtils.toJson(toDelete));
 
     LOG.info("Deleting intermediate files");
     for (String name : toDelete.keySet()) {

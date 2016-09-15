@@ -45,9 +45,8 @@ public class WaitForOperation extends DoFn<KV<String, WorkflowArgs>, KV<String, 
     // Task is already done.
     if (o != null && o.getDone()) {
       c.output(c.element());
-    }
     // Wait for it
-    else {
+    } else {
       if (wa.isTesting() != null && wa.isTesting()) {
         LOG.info("Running in local/test mode. Not waiting for the operation to complete.");
       } else {

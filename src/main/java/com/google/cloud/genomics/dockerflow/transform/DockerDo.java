@@ -202,9 +202,8 @@ public class DockerDo
       // This happens if retries are enabled but the first try succeeded
       if (o != null && o.getDone() && o.getError() == null) {
         c.output(c.element());
-      }
       // Otherwise run (or rerun) it
-      else {
+      } else {
         // Modify a copy of the task
         Task t = new Task(task);
 
@@ -233,13 +232,9 @@ public class DockerDo
           o = new Operation();
           o.setDone(true);
           o.setName("operations/RESUME-" + t.hashCode());
-        }
         // Submit the task
-        else {
-          try {
-            LOG.info("WorkflowArgs: " + StringUtils.toJson(wa));
-          } catch (Exception e) {
-          }
+        } else {
+          LOG.info("WorkflowArgs: " + StringUtils.toJson(wa));
 
           LOG.info("Starting task");
           try {
@@ -499,9 +494,8 @@ public class DockerDo
           // Modify a copy
           if (retval == null) {
             retval = new WorkflowArgs(wa);
-          }
           // Find differences and merge
-          else {
+          } else {
             retval.gatherArgs(wa);
           }
         }
