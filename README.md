@@ -365,9 +365,9 @@ ahead to the failed step and try to rerun it.
 
 ## What next?
 
-*   See the YAML examples in the src/test/resources directory.
+*   See the YAML examples in the [src/test/resources](src/test/resources) directory.
 *   See the Java code examples in
-    src/test/java/com/jbingham/dockerflow/examples.
+    [src/test/java/com/google/cloud/genomics/dockerflow/examples](src/test/java/com/google/cloud/genomics/dockerflow/examples)
 *   Learn about the [Pipelines API]
     (https://cloud.google.com/genomics/v1alpha2/pipelines).
 *   Read about [Dataflow](https://cloud.google.com/dataflow).
