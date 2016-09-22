@@ -372,3 +372,12 @@ ahead to the failed step and try to rerun it.
     (https://cloud.google.com/genomics/v1alpha2/pipelines).
 *   Read about [Dataflow](https://cloud.google.com/dataflow).
 *   Write your own workflows!
+
+## A word about quotas
+
+Google has numerous quotas that may impact the parallel execution of large numbers of tasks.  Some hints include:
+
+* Check and potentially increase quotas here: https://console.cloud.google.com/compute/quotas
+* Consider using as many zones as possible (eg., 'us-*')
+* The pipeline system will queue jobs until resources are available if quotas are exceeded
+* Dockerflow will abort if any job fails. Use the '--abort=false' flag for different behavior.
