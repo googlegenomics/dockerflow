@@ -17,8 +17,6 @@ package com.google.cloud.genomics.dockerflow.runner;
 
 /**
  * An exception occurred when running the Docker command.
- *
- * @author binghamj
  */
 @SuppressWarnings("serial")
 public class TaskException extends RuntimeException {

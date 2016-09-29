@@ -1,0 +1,9 @@
+defn:
+  name: HelloWorkflow
+steps:
+- defn:
+    name: Hello
+    inputParameters:
+      name: message
+    docker:
+      cmd: echo $message

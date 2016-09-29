@@ -183,8 +183,8 @@ public class ArgsBuilder {
    * @param path
    * @return
    */
-  public ArgsBuilder basePath(String path) {
-    workflowArgs.setBasePath(
+  public ArgsBuilder workspace(String path) {
+    workflowArgs.setWorkspace(
         path + (path.endsWith("/") ? "" : "/") + "${" + Task.WORKFLOW_ELEMENT + "}/");
     return this;
   }

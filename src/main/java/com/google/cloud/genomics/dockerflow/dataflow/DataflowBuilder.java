@@ -25,8 +25,6 @@ import java.util.Map;
 
 /**
  * Builder for workflow graphs.
- *
- * @author binghamj
  */
 public class DataflowBuilder {
   private Workflow workflow;

@@ -1,0 +1,766 @@
+defn:
+  name: "GatkPairedSingleSample"
+
+steps:
+
+# Get version of BWA
+- defn:
+    name: "BwaVersion"
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: "/usr/gitc/bwa 2>&1 | grep -e '^Version' | sed 's/Version: //'"
+
+# Read unmapped BAM, convert on-the-fly to FASTQ and stream to BWA MEM for alignment
+- defn:
+    name: "SamToFastqAndBwaMem"
+    inputParameters:
+    - name: "input_bam"
+      type: file
+    - name: "bwa_commandline"
+      defaultValue: "${bwa_commandline}"
+    - name: "output_bam_basename"
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    - name: "ref_alt"
+      defaultValue: "${ref_alt}"
+      type: file
+    - name: "ref_amb"
+      defaultValue: "${ref_amb}"
+      type: file
+    - name: "ref_ann"
+      defaultValue: "${ref_ann}"
+      type: file
+    - name: "ref_bwt"
+      defaultValue: "${ref_bwt}"
+      type: file
+    - name: "ref_pac"
+      defaultValue: "${ref_pac}"
+      type: file
+    - name: "ref_sa"
+      defaultValue: "${ref_sa}"
+      type: file
+    outputParameters:
+    - name: "output_bam"
+      defaultValue: "${output_bam_basename}.bam"
+      type: file
+    - name: "output_bam_index"
+      defaultValue: "${output_bam_basename}.bai"
+      type: file
+    - name: "output_bam_md5"
+      defaultValue: "${output_bam_basename}.bam.md5"
+      type: file
+    resources:
+      minCpuCores: "16"
+      minRamGb: "14"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        set -o pipefail
+        # if ref_alt has data in it,
+        if [ -s ${ref_alt} ]; then
+          java -Xmx3000m -jar /usr/gitc/picard.jar \
+            SamToFastq \
+            INPUT=${input_bam} \
+            FASTQ=/dev/stdout \
+            INTERLEAVE=true \
+            NON_PF=true | \
+          /usr/gitc/${bwa_commandline} ($ref_fasta} /dev/stdin -  2> >(tee ${bwa_stderr_log} >&2) | \
+          samtools view -1 - > ${output_bam} && \
+          grep -m1 "read .* ALT contigs" ${bwa_stderr_log} | \
+          grep -v "read 0 ALT contigs"
+
+        # else ref_alt is empty or could not be found
+        else
+          exit 1;
+        fi
+  scatterBy: "input_bam"
+
+# Merge original input uBAM file with BWA-aligned BAM file
+- defn:
+    name: "MergeBamAlignment"
+    inputParameters:
+    - name: "unmapped_bam"
+      type: file
+    - name: "bwa_commandline"
+      defaultValue: "${bwa_commandline}"
+    - name: "bwa_version"
+    - name: "aligned_bam"
+      type: file
+    - name: "output_bam_basename"
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    - name: "ref_dict"
+      defaultValue: "${ref_dict}"
+      type: file
+    outputParameters:
+    - name: "output_bam"
+      defaultValue: "${output_bam_basename}.bam"
+      type: file
+    resources:
+      minRamGb: "3.5"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        # set the bash variable needed for the command-line
+        bash_ref_fasta=${ref_fasta}
+        java -Xmx3000m -jar /usr/gitc/picard.jar \
+          MergeBamAlignment \
+          VALIDATION_STRINGENCY=SILENT \
+          EXPECTED_ORIENTATIONS=FR \
+          ATTRIBUTES_TO_RETAIN=X0 \
+          ALIGNED_BAM=${aligned_bam} \
+          UNMAPPED_BAM=${unmapped_bam} \
+          OUTPUT=${output_bam} \
+          REFERENCE_SEQUENCE=${ref_fasta} \
+          PAIRED_RUN=true \
+          SORT_ORDER="unsorted" \
+          IS_BISULFITE_SEQUENCE=false \
+          ALIGNED_READS_ONLY=false \
+          CLIP_ADAPTERS=false \
+          MAX_RECORDS_IN_RAM=2000000 \
+          ADD_MATE_CIGAR=true \
+          MAX_INSERTIONS_OR_DELETIONS=-1 \
+          PRIMARY_ALIGNMENT_STRATEGY=MostDistant \
+          PROGRAM_RECORD_ID="bwamem" \
+          PROGRAM_GROUP_VERSION="${bwa_version}" \
+          PROGRAM_GROUP_COMMAND_LINE="${bwa_commandline}" \
+          PROGRAM_GROUP_NAME="bwamem" \
+          UNMAP_CONTAMINANT_READS=true
+  args:
+    fromFile:
+      - "bwa_version"
+
+# Sort BAM file by coordinate order and fix tag values for NM and UQ
+- defn:
+    name: "SortAndFixReadGroupBam"
+    inputParameters:
+    - name: "input_bam"
+      type: file
+    - name: "output_bam_basename"
+    - name: "ref_dict"
+      defaultValue: "${ref_dict}"
+      type: file
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    - name: "pipeline_run"
+      defaultValue: "${workflow.index}"
+    outputParameters:
+    - name: "output_bam"
+      defaultValue: "${output_bam_basename}.bam"
+      type: file
+    - name: "output_bam_index"
+      defaultValue: "${output_bam_basename}.bai"
+      type: file
+    - name: "output_bam_md5"
+      defaultValue: "${output_bam_basename}.bam.md5"
+      type: file
+    resources:
+      minRamGb: "5"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -Xmx4000m -jar /usr/gitc/picard.jar \
+        SortSam \
+        INPUT=${input_bam} \
+        OUTPUT=/dev/stdout \
+        SORT_ORDER="coordinate" \
+        CREATE_INDEX=false \
+        CREATE_MD5_FILE=false | \
+        java -Xmx500m -jar /usr/gitc/picard.jar \
+        SetNmAndUqTags \
+        INPUT=/dev/stdin \
+        OUTPUT=${output_bam} \
+        CREATE_INDEX=true \
+        CREATE_MD5_FILE=true \
+        REFERENCE_SEQUENCE=${ref_fasta}
+  gatherBy: "pipeline_run"
+
+# Mark duplicate reads to avoid counting non-independent observations
+- defn:
+    name: "MarkDuplicates"
+    inputParameters:
+    - name: "input_bams"
+      type: "file[]"
+      inputBinding:
+        itemSeparator: " INPUT="
+    - name: "output_bam_basename"
+    - name: "metrics_filename"
+    outputParameters:
+    - name: "output_bam"
+      defaultValue: "${output_bam_basename}.bam"
+      type: file
+    - name: "duplicate_metrics"
+      defaultValue: "${metrics_filename}"
+      type: file
+    resources:
+      minRamGb: "7"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -Xmx4000m -jar /usr/gitc/picard.jar \
+          MarkDuplicates \
+          INPUT=${input_bams} \
+          OUTPUT=${output_bam} \
+          METRICS_FILE=${duplicate_metrics} \
+          VALIDATION_STRINGENCY=SILENT \
+          OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 \
+          ASSUME_SORT_ORDER="queryname" \
+          CREATE_MD5_FILE=true
+
+# Sort BAM file by coordinate order and fix tag values for NM and UQ
+- defn:
+    name: "SortAndFixSampleBam"
+    inputParameters:
+    - name: "input_bam"
+      type: file
+    - name: "output_bam_basename"
+    - name: "ref_dict"
+      defaultValue: "${ref_dict}"
+      type: file
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    - name: "pipeline_run"
+      defaultValue: "${workflow.index}"
+    outputParameters:
+    - name: "output_bam"
+      defaultValue: "${output_bam_basename}.bam"
+      type: file
+    - name: "output_bam_index"
+      defaultValue: "${output_bam_basename}.bai"
+      type: file
+    - name: "output_bam_md5"
+      defaultValue: "${output_bam_basename}.bam.md5"
+      type: file
+    resources:
+      minRamGb: "5"
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -Xmx4000m -jar /usr/gitc/picard.jar \
+        SortSam \
+        INPUT=${input_bam} \
+        OUTPUT=/dev/stdout \
+        SORT_ORDER="coordinate" \
+        CREATE_INDEX=false \
+        CREATE_MD5_FILE=false | \
+        java -Xmx500m -jar /usr/gitc/picard.jar \
+        SetNmAndUqTags \
+        INPUT=/dev/stdin \
+        OUTPUT=${output_bam} \
+        CREATE_INDEX=true \
+        CREATE_MD5_FILE=true \
+        REFERENCE_SEQUENCE=${ref_fasta}
+
+# Generate sets of intervals for scatter-gathering over chromosomes
+- defn:
+    name: "CreateSequenceGroupingTSV"
+    inputParameters:
+    - name: "ref_dict"
+      defaultValue: "${ref_dict}"
+      type: file
+    resources:
+      minRamGb: "2"
+      preemptible: true
+    docker:
+      imageName: "python:2.7"
+      cmd: |
+        python <<CODE
+        with open("${ref_dict}", "r") as ref_dict_file:
+            sequence_tuple_list = []
+            longest_sequence = 0
+            for line in ref_dict_file:
+                if line.startswith("@SQ"):
+                    line_split = line.split("\t")
+                    # (Sequence_Name, Sequence_Length)
+                    sequence_tuple_list.append((line_split[1].split("SN:")[1], int(line_split[2].split("LN:")[1])))
+            longest_sequence = sorted(sequence_tuple_list, key=lambda x: x[1], reverse=True)[0][1]
+
+        # We are adding this to the intervals because hg38 has contigs named with embedded colons and a bug in GATK strips off
+        # the last element after a :, so we add this as a sacrificial element.
+        hg38_protection_tag = ":1+"
+        # initialize the tsv string with the first sequence
+        tsv_string = sequence_tuple_list[0][0] + hg38_protection_tag
+        temp_size = sequence_tuple_list[0][1]
+        for sequence_tuple in sequence_tuple_list[1:]:
+            if temp_size + sequence_tuple[1] <= longest_sequence:
+                temp_size += sequence_tuple[1]
+                tsv_string += "\t" + sequence_tuple[0] + hg38_protection_tag
+            else:
+                tsv_string += "\n" + sequence_tuple[0] + hg38_protection_tag
+                temp_size = sequence_tuple[1]
+
+        print tsv_string
+        CODE
+
+# Generate Base Quality Score Recalibration (BQSR) model
+- defn:
+    name: "BaseRecalibrator"
+    inputParameters:
+    - name: "input_bam"
+      type: file
+    - name: "input_bam_index"
+      type: file
+    - name: "recalibration_report_filename"
+    - name: "sequence_group_interval"
+      type: "array"
+      inputBinding:
+        itemSeparator: " -L "
+    - name: "dbSNP_vcf"
+      defaultValue: "${dbSNP_vcf}"
+      type: file
+    - name: "dbSNP_vcf_index"
+      defaultValue: "${dbSNP_vcf_index}"
+      type: file
+    - name: "known_snps_sites_vcf"
+      defaultValue: "${known_snps_sites_vcf}"
+      type: file
+    - name: "known_snps_sites_vcf_index"
+      defaultValue: "${known_snps_sites_vcf_index}"
+      type: file
+    - name: "known_indels_sites_vcf"
+      defaultValue: "${known_indels_sites_vcf}"
+      type: file
+    - name: "known_indels_sites_vcf_index"
+      defaultValue: "${known_indels_sites_vcf_index}"
+      type: file
+    - name: "ref_dict"
+      defaultValue: "${ref_dict}"
+      type: file
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    outputParameters:
+    - name: "recalibration_report"
+      defaultValue: "${recalibration_report_filename}"
+      type: file
+    resources:
+      minRamGb: "6"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -XX:+PrintFlagsFinal \
+          -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCDetails \
+          -Xloggc:gc_log.log -Dsamjdk.use_async_io=false -Xmx4000m \
+          -jar /usr/gitc/GATK4.jar \
+          BaseRecalibrator \
+          -R ${ref_fasta} \
+          -I ${input_bam} \
+          --useOriginalQualities \
+          -O ${recalibration_report} \
+          -knownSites ${dbSNP_vcf} \
+          -knownSites ${known_indels_sites_VCFs} \
+          -L ${sequence_group_interval}
+  scatterBy: "sequence_group_interval"
+  args:
+    fromFile:
+      - "sequence_group_interval"
+
+# Apply Base Quality Score Recalibration (BQSR) model
+- defn:
+    name: "ApplyBQSR"
+    inputParameters:
+    - name: "input_bam"
+      type: file
+    - name: "input_bam_index"
+      type: file
+    - name: "output_bam_basename"
+    - name: "recalibration_report"
+      type: file
+    - name: "sequence_group_interval"
+      type: "array"
+      inputBinding:
+        itemSeparator: " -L "
+    - name: "ref_dict"
+      defaultValue: "${ref_dict}"
+      type: file
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    - name: "pipeline_run"
+      defaultValue: "${workflow.index}"
+    outputParameters:
+    - name: "recalibrated_bam"
+      defaultValue: "${output_bam_basename}.bam"
+      type: file
+    - name: "recalibrated_bam_checksum"
+      defaultValue: "${output_bam_basename}.bam.md5"
+      type: file
+    resources:
+      minRamGb: "3.5"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -XX:+PrintFlagsFinal -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps \
+          -XX:+PrintGCDetails -Xloggc:gc_log.log -Dsamjdk.use_async_io=false \
+          -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xmx3000m \
+          -jar /usr/gitc/GATK4.jar \
+          ApplyBQSR \
+          --createOutputBamMD5 \
+          --addOutputSAMProgramRecord \
+          -R ${ref_fasta} \
+          -I ${input_bam} \
+          --useOriginalQualities \
+          -O ${recalibrated_bam} \
+          -bqsr ${recalibration_report} \
+          -SQQ 10 -SQQ 20 -SQQ 30 -SQQ 40 \
+          --emit_original_quals \
+          -L ${sequence_group_interval}
+  gatherBy: "pipeline_run"
+
+# Combine multiple recalibration tables from scattered BaseRecalibrator runs
+- defn:
+    name: "GatherBqsrReports"
+    inputParameters:
+    - name: "input_bqsr_reports"
+      type: "file[]"
+      inputBinding:
+        itemSeparator: " -I "
+    - name: "output_report_filename"
+    outputParameters:
+    - name: "output_bqsr_report"
+      defaultValue: "${output_report_filename}"
+      type: file
+    resources:
+      minRamGb: "3.5"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -Xmx3000m -jar /usr/gitc/GATK4.jar \
+          GatherBQSRReports \
+          -I ${sep=' -I ' input_bqsr_reports} \
+          -O ${output_bqsr_report}
+
+# Apply Base Quality Score Recalibration (BQSR) model
+- defn:
+    name: "ApplyBQSRToUnmappedReads"
+    inputParameters:
+    - name: "input_bam"
+      type: file
+    - name: "input_bam_index"
+      type: file
+    - name: "output_bam_basename"
+    - name: "recalibration_report"
+      type: file
+    - name: "sequence_group_interval"
+      type: "array"
+      inputBinding:
+        itemSeparator: " -L "
+    - name: "ref_dict"
+      defaultValue: "${ref_dict}"
+      type: file
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    - name: "pipeline_run"
+      defaultValue: "${workflow.index}"
+    outputParameters:
+    - name: "recalibrated_bam"
+      defaultValue: "${output_bam_basename}.bam"
+      type: file
+    - name: "recalibrated_bam_checksum"
+      defaultValue: "${output_bam_basename}.bam.md5"
+      type: file
+    resources:
+      minRamGb: "3.5"
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -XX:+PrintFlagsFinal -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps \
+          -XX:+PrintGCDetails -Xloggc:gc_log.log -Dsamjdk.use_async_io=false \
+          -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xmx3000m \
+          -jar /usr/gitc/GATK4.jar \
+          ApplyBQSR \
+          --createOutputBamMD5 \
+          --addOutputSAMProgramRecord \
+          -R ${ref_fasta} \
+          -I ${input_bam} \
+          --useOriginalQualities \
+          -O ${output_bam} \
+          -bqsr ${recalibration_report} \
+          -SQQ 10 -SQQ 20 -SQQ 30 -SQQ 40 \
+          --emit_original_quals \
+          -L ${sequence_group_interval}
+  gatherBy: "pipeline_run"
+
+# Combine multiple recalibrated BAM files from scattered ApplyRecalibration runs
+- defn:
+    name: "GatherBamFiles"
+    inputParameters:
+    - name: "input_bams"
+      type: "file[]"
+      inputBinding:
+        itemSeparator: " INPUT="
+    - name: "input_unmapped_reads_bam"
+      type: file
+    - name: "output_bam_basename"
+    outputParameters:
+    - name: "output_bam"
+      defaultValue: "${output_bam_basename}.bam"
+      type: file
+    - name: "output_bam_index"
+      defaultValue: "${output_bam_basename}.bai"
+      type: file
+    - name: "output_bam_md5"
+      defaultValue: "${output_bam_basename}.bam.md5"
+      type: file
+    resources:
+      minRamGb: "3"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -Xmx2000m -jar /usr/gitc/picard.jar \
+          GatherBamFiles \
+          INPUT=${input_bams} \
+          INPUT=${input_unmapped_reads_bam} \
+          OUTPUT=${output_bam} \
+          CREATE_INDEX=true \
+          CREATE_MD5_FILE=true
+
+# Convert BAM file to CRAM format
+- defn:
+    name: "ConvertToCram"
+    inputParameters:
+    - name: "input_bam"
+      type: file
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    - name: "output_bam_basename"
+    outputParameters:
+    - name: "output_cram"
+      defaultValue: "${output_bam_basename}.cram"
+      type: file
+    - name: "output_cram_index"
+      defaultValue: "${output_bam_basename}.crai"
+      type: file
+    resources:
+      minRamGb: "3"
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+          samtools view -C -T ${ref_fasta} ${input_bam} | \
+          tee ${output_cram} | \
+          md5sum > ${output_cram}.md5 && \
+          seq_cache_populate.pl -root ./ref/cache ${ref_fasta} && \
+          REF_PATH=: REF_CACHE=./ref/cache/%2s/%2s/%s \
+          samtools index ${output_cram} &&
+          mv ${output_cram}.crai ${output_cram_index}
+
+# Call variants on a single sample with HaplotypeCaller to produce a GVCF
+- defn:
+    name: "HaplotypeCaller"
+    inputParameters:
+    - name: "input_bam"
+      type: file
+    - name: "input_bam_index"
+      type: file
+    - name: "interval_list"
+      type: file
+    - name: "gvcf_basename"
+    - name: "contamination"
+      defaultValue: 0
+    - name: "ref_dict"
+      defaultValue: "${ref_dict}"
+      type: file
+    - name: "ref_fasta"
+      defaultValue: "${ref_fasta}"
+      type: file
+    - name: "ref_fasta_index"
+      defaultValue: "${ref_fasta_index}"
+      type: file
+    - name: "pipeline_run"
+      defaultValue: "${workflow.index}"
+    outputParameters:
+    - name: "output_gvcf"
+      defaultValue: "${gvcf_basename}.vcf.gz"
+      type: file
+    - name: "output_gvcf_index"
+      defaultValue: "${gvcf_basename}.vcf.gz.tbi"
+      type: file
+    resources:
+      minRamGb: "10"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xmx8000m \
+          -jar /usr/gitc/GATK35.jar \
+          -T HaplotypeCaller \
+          -R ${ref_fasta} \
+          -o ${output_gvcf} \
+          -I ${input_bam} \
+          -L ${interval_list} \
+          -ERC GVCF \
+          --max_alternate_alleles 3 \
+          -variant_index_parameter 128000 \
+          -variant_index_type LINEAR \
+          -contamination ${contamination} \
+          --read_filter OverclippedRead
+  scatterBy: "interval_list"
+  gatherBy: "pipeline_run"
+
+# Combine multiple VCFs or GVCFs from scattered HaplotypeCaller runs
+- defn:
+    name: "GatherVCFs"
+    inputParameters:
+    - name: "input_vcfs"
+      type: "file[]"
+      inputBinding:
+        itemSeparator: " INPUT="
+    - name: "input_vcfs_indexes"
+      type: "file[]"
+      inputBinding:
+        itemSeparator: " "
+    - name: "output_vcf_name"
+    outputParameters:
+    - name: "output_vcf"
+      defaultValue: "${output_vcf_name}"
+      type: file
+    - name: "output_vcf_index"
+      defaultValue: "${output_vcf_name}.tbi"
+      type: file
+    resources:
+      minRamGb: "3"
+      preemptible: true
+    docker:
+      imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
+      cmd: |
+        java -Xmx2g -jar /usr/gitc/picard.jar \
+        MergeVcfs \
+        INPUT=${input_vcfs} \
+        OUTPUT=${output_vcf}
+
+args:
+  inputs:
+    bwa_commandline: "bwa mem -K 100000000 -p -v 3 -t 16"
+    recalibrated_bam_basename: "${sample_name}.aligned.duplicates_marked.recalibrated"
+
+    SamToFastqAndBwaMem.input_bam: "${flowcell_unmapped_bams}"
+    SamToFastqAndBwaMem.output_bam_basename: "${= '${input_bam}'.replace(/gs:.*\\//, '').replace(/.bam/, '.unmerged'); }"
+    SamToFastqAndBwaMem.task.diskSize: "${flowcell_small_disk}"
+
+    MergeBamAlignment.unmapped_bam: "${SamToFastqAndBwaMem.input_bam}"
+    MergeBamAlignment.bwa_version: "${BwaVersion.task.stdout}"
+    MergeBamAlignment.aligned_bam: "${SamToFastqAndBwaMem.output_bam}"
+    MergeBamAlignment.output_bam_basename: "${= '${SamToFastqAndBwaMem.input_bam}'.replace(/gs:.*\\//, '').replace(/.bam/, '.aligned.unsorted'); }"
+    MergeBamAlignment.task.diskSize: "${flowcell_medium_disk}"
+
+    SortAndFixReadGroupBam.input_bam: "${MergeBamAlignment.output_bam}"
+    SortAndFixReadGroupBam.output_bam_basename: "${= '${SamToFastqAndBwaMem.input_bam}'.replace(/gs:.*\\//, '').replace(/.bam/, '.sorted'); }"
+    SortAndFixReadGroupBam.task.diskSize: "${flowcell_medium_disk}"
+
+    MarkDuplicates.input_bams: "${MergeBamAlignment.output_bam}"
+    MarkDuplicates.output_bam_basename: "${sample_name}.aligned.unsorted.duplicates_marked"
+    MarkDuplicates.metrics_filename: "${sample_name}.duplicate_metrics"
+    MarkDuplicates.task.diskSize: "${agg_large_disk}"
+
+    SortAndFixSampleBam.input_bam: "${MarkDuplicates.output_bam}"
+    SortAndFixSampleBam.output_bam_basename: "${sample_name}.aligned.duplicate_marked.sorted"
+    SortAndFixSampleBam.task.diskSize: "${agg_large_disk}"
+
+    BaseRecalibrator.input_bam: "${SortAndFixSampleBam.output_bam}"
+    BaseRecalibrator.input_bam_index: "${SortAndFixSampleBam.output_bam_index}"
+    BaseRecalibrator.recalibration_report_filename: "${sample_name}.recal_data.csv"
+    BaseRecalibrator.sequence_group_interval: "${CreateSequenceGroupingTSV.sequence_grouping}"
+    BaseRecalibrator.task.diskSize: "${agg_small_disk}"
+
+    ApplyBQSR.input_bam: "${SortAndFixSampleBam.output_bam}"
+    ApplyBQSR.input_bam_index: "${SortAndFixSampleBam.output_bam_index}"
+    ApplyBQSR.output_bam_basename: "${recalibrated_bam_basename}"
+    ApplyBQSR.recalibration_report: "${BaseRecalibrator.recalibration_report}"
+    ApplyBQSR.sequence_group_interval: "${BaseRecalibrator.sequence_group_interval}"
+    ApplyBQSR.task.diskSize: "${agg_small_disk}"
+
+    GatherBqsrReports.input_bqsr_reports: "${BaseRecalibrator.recalibration_report}"
+    GatherBqsrReports.output_report_filename: "${sample_name}.recal_data.csv"
+    GatherBqsrReports.task.diskSize: "${flowcell_small_disk}"
+
+    ApplyBQSRToUnmappedReads.input_bam: "${SortAndFixSampleBam.output_bam}"
+    ApplyBQSRToUnmappedReads.input_bam_index: "${SortAndFixSampleBam.output_bam_index}"
+    ApplyBQSRToUnmappedReads.output_bam_basename: "${recalibrated_bam_basename}"
+    ApplyBQSRToUnmappedReads.recalibration_report: "${GatherBqsrReports.output_bqsr_report}"
+    ApplyBQSRToUnmappedReads.sequence_group_interval: "unmapped"
+    ApplyBQSRToUnmappedReads.task.diskSize: "${agg_small_disk}"
+
+    GatherBamFiles.input_bams: "${ApplyBQSR.recalibrated_bam}"
+    GatherBamFiles.input_unmapped_reads_bam: "${ApplyBQSRToUnmappedReads.recalibrated_bam}"
+    GatherBamFiles.output_bam_basename: "${sample_name}"
+    GatherBamFiles.task.diskSize: "${agg_large_disk}"
+
+    ConvertToCram.input_bam: "${GatherBamFiles.output_bam}"
+    ConvertToCram.output_bam_basename: "${sample_name}"
+    ConvertToCram.task.diskSize: "${agg_medium_disk}"
+
+    HaplotypeCaller.input_bam: "${GatherBamFiles.output_bam}"
+    HaplotypeCaller.input_bam_index: "${GatherBamFiles.output_bam_index}"
+    HaplotypeCaller.interval_list: "${scattered_calling_intervals}"
+    HaplotypeCaller.gvcf_basename: "${sample_name}"
+    HaplotypeCaller.task.diskSize: "${agg_small_disk}"
+
+    GatherVCFs.input_vcfs: "${HaplotypeCaller.output_gvcf}"
+    GatherVCFs.input_vcfs_indexes: "${HaplotypeCaller.output_gvcf_index}"
+    GatherVCFs.output_vcf_name: "${final_gvcf_name}"
+    GatherVCFs.task.diskSize: "${agg_small_disk}"
+
+  outputs:
+    duplicate_metrics: "${MarkDuplicates.duplicate_metrics}"
+    bqsr_report: "${GatherBqsrReports.output_bqsr_report}"
+    cram: "${ConvertToCram.output_cram}"
+    cram_index: "${ConvertToCram.output_cram_index}"
+    vcf: "${GatherVCFs.output_vcf}"
+    vcf_index: "${GatherVCFs.output_vcf_index}"
+
+graph:
+- BRANCH:
+  - CreateSequenceGroupingTSV
+  - - BwaVersion
+    - SamToFastqAndBwaMem
+    - MergeBamAlignment
+    - SortAndFixReadGroupBam
+    - MarkDuplicates
+    - SortAndFixSampleBam
+- BaseRecalibrator
+- ApplyBQSR
+- GatherBqsrReports
+- ApplyBQSRToUnmappedReads
+- GatherBamFiles
+- BRANCH:
+  - ConvertToCram
+  - - HaplotypeCaller
+    - GatherVCFs

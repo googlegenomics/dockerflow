@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Builder for a table of workflow args to allow bulk processing.
- *
- * @author binghamj
  */
 public class ArgsTableBuilder implements DockerflowConstants {
   private static final Logger LOG = LoggerFactory.getLogger(ArgsTableBuilder.class);

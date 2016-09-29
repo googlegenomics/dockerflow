@@ -180,7 +180,7 @@ public class ExampleGraphsTest implements DockerflowConstants {
     WorkflowArgs wa =
         ArgsBuilder.of()
             .inputFromFile("ArrayTest.sequence_group_interval", utils.baseDir + "/seq-group.tsv")
-            .basePath(utils.baseDir)
+            .workspace(utils.baseDir)
             .build();
     LOG.info(StringUtils.toJson(wa));
 

@@ -40,8 +40,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Factory class for Tasks and Workflows.
- *
- * @author binghamj
  */
 public class WorkflowFactory implements DockerflowConstants {
   static final Logger LOG = LoggerFactory.getLogger(WorkflowFactory.class);
@@ -229,7 +227,7 @@ public class WorkflowFactory implements DockerflowConstants {
 
     // Set all other parameters
     if (m.containsKey(WORKSPACE)) {
-      b.basePath(m.get(WORKSPACE));
+      b.workspace(m.get(WORKSPACE));
     }
     if (m.containsKey(LOGGING)) {
       b.logging(m.get(LOGGING));

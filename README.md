@@ -15,8 +15,9 @@ Java code. Examples of workflows defined in YAML can be found in
 
 Examples of workflows defined in Java can be found in
 
+*   [examples](examples)
 *   [src/test/java/com/google/cloud/genomics/dockerflow/examples](src/test/java/com/google/cloud/genomics/dockerflow/examples)
-    
+
 You can run a batch of workflows at once by providing a csv file with one row per
 workflow to define the parameters.
 
@@ -42,7 +43,7 @@ Workflow Language]
 
 *   [Prerequisites](#prerequisites)
 *   [Getting started](#getting-started)
-*   [Docker + Dataflow vs custom scripts](#docker--dataflow-vs-custom-scripts)
+*   [Docker + Dataflow vs custom scripts](#docker-and-dataflow-vs-custom-scripts)
 *   [Creating your own workflows](#creating-your-own-workflows)
     *   [Sequential workflows](#sequential-workflows)
     *   [Parallel workflows](#parallel-workflows)
@@ -66,12 +67,12 @@ Workflow Language]
 Run the following steps on your laptop or local workstation:
 
 1.  git clone this repository.
-    
-        git clone https://github.com/googlegenomics/dockerflow  
-    
+
+        git clone https://github.com/googlegenomics/dockerflow
+
 2.  Build it with Maven.
 
-        cd dockerflow 
+        cd dockerflow
         mvn package -DskipITs
 
 3.  Run a sample workflow:
@@ -89,11 +90,11 @@ The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
 will block until the workflow completes. To run in your cloud project, you can
 remove the `--runner` option to use the default Dataflow runner.
 
-## Docker + Dataflow vs custom scripts
+## Docker and Dataflow vs custom scripts
 
 How is Dataflow better than a shell script?
 
-Dataflow provides: 
+Dataflow provides:
 
 *   **Complex workflow orchestration**: Dataflow supports arbitrary directed
 acyclic graphs. The logic of branching, merging, parallelizing, and monitoring is
@@ -125,7 +126,7 @@ or the Java class name of a Java definition.
 If you'd rather define workflows in code, you'll use the Java SDK. See
 
 *   [src/test/java/com/google/cloud/genomics/dockerflow/examples](src/test/java/com/google/cloud/genomics/dockerflow/examples)
-    
+
 Everything that can be done with YAML can also be done (and more compactly) in
 Java code. Java provides greater flexibility too.
 
@@ -139,14 +140,14 @@ steps, and each of the steps can be a workflow.
 
 ### Hello, world
 
-The best way to get started with Dockerflow is to look at a real example. 
+The best way to get started with Dockerflow is to look at a real example.
 
     defn:
       name: HelloWorkflow
     steps:
     - defn:
         name: Hello
-        docker: 
+        docker:
           imageName: ubuntu
           cmd: echo “Hello, world”
 
@@ -158,7 +159,7 @@ in a stock Ubuntu Docker image.
 
 The `defn` section for the workflow `steps` is a superset of the
 [Pipeline object](https://cloud.google.com/genomics/reference/rest/v1alpha2/pipelines#Pipeline)
-used by the [Pipelines API](https://cloud.google.com/genomics/v1alpha2/pipelines). 
+used by the [Pipelines API](https://cloud.google.com/genomics/v1alpha2/pipelines).
 
 ### Sequential workflows
 
@@ -367,7 +368,8 @@ ahead to the failed step and try to rerun it.
 
 *   See the YAML examples in the [src/test/resources](src/test/resources) directory.
 *   See the Java code examples in
-    [src/test/java/com/google/cloud/genomics/dockerflow/examples](src/test/java/com/google/cloud/genomics/dockerflow/examples)
+    *    [examples](examples)
+    *    [src/test/java/com/google/cloud/genomics/dockerflow/examples](src/test/java/com/google/cloud/genomics/dockerflow/examples)
 *   Learn about the [Pipelines API]
     (https://cloud.google.com/genomics/v1alpha2/pipelines).
 *   Read about [Dataflow](https://cloud.google.com/dataflow).

@@ -18,11 +18,18 @@ package com.google.cloud.genomics.dockerflow.workflow;
 import com.google.cloud.dataflow.sdk.Pipeline;
 import com.google.cloud.dataflow.sdk.options.DataflowPipelineOptions;
 import com.google.cloud.genomics.dockerflow.args.WorkflowArgs;
+import com.google.cloud.genomics.dockerflow.dataflow.DataflowBuilder;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-/** A workflow definition. Dockerflow can instantiate workflows from the command-line. */
+/** 
+ * A workflow definition. Typically you'll implement only one of the methods:
+ * createWorkflow if you're going to use the WorkflowBuilder, and createDataflow
+ * if you're going to construct the Dataflow pipeline using the PTransform 
+ * classes directly.
+ */
 public interface WorkflowDefn {
 
   /**
@@ -31,7 +38,19 @@ public interface WorkflowDefn {
    *
    * @throws URISyntaxException
    */
-  Pipeline createDataflow(
+  default Pipeline createDataflow(
       Map<String, WorkflowArgs> argsTable, DataflowPipelineOptions pipelineOptions, String[] args)
-      throws IOException, URISyntaxException;
+      throws IOException {
+    return DataflowBuilder.of(createWorkflow(args))
+        .createFrom(argsTable)
+        .pipelineOptions(pipelineOptions)
+        .build();
+  }
+  
+  /**
+   * Create the workflow.
+   */
+  default Workflow createWorkflow(String[] args) throws IOException {
+    return null;
+  }
 }

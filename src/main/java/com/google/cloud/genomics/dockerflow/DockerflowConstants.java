@@ -21,44 +21,7 @@ import com.google.cloud.dataflow.sdk.runners.DirectPipelineRunner;
 
 /** Command-line flags and defaults. */
 public interface DockerflowConstants {
-  String HELP = "help";
-  String WORKFLOW_FILE = "workflow-file";
-  String WORKFLOW_CLASS = "workflow-class";
-  String TASK_FILE = "task-file";
-  String LOGGING = "logging";
-  String WORKSPACE = "workspace";
-  String PROJECT = "project";
-  String INPUTS = "inputs";
-  String INPUTS_FROM_FILE = "inputs-fron-file";
-  String OUTPUTS = "outputs";
-  String ARGS_FILE = "args-file";
-  String GLOBALS = "globals";
-  String ZONES = "zones";
-  String DISK_SIZE = "disk-size";
-  String CPU = "cpu";
-  String MEMORY = "memory";
-  String PREEMPTIBLE = "preemptible";
-  String RUN_ID = "run-id";
-  String SERVICE_ACCOUNT_NAME = "service-account-name";
-  String SERVICE_ACCOUNT_SCOPES = "service-account-scopes";
-  String KEEP_ALIVE = "keep-alive";
-  String TEST = "test";
-  String RESUME = "resume";
-  String DELETE_FILES = "delete-files";
   String ABORT = "abort";
-  String STAGING = "staging";
-  String STAGING_LOCATION = "stagingLocation";
-  String RUNNER = "runner";
-  String MAX_WORKERS = "max-workers";
-  String MACHINE_TYPE = "machine-type";
-  String DEFAULT_MACHINE_TYPE = "n1-standard-1";
-  String DIRECT_RUNNER = DirectPipelineRunner.class.getSimpleName();
-  String BLOCKING_RUNNER = BlockingDataflowPipelineRunner.class.getSimpleName();
-  String DEFAULT_RUNNER = DataflowPipelineRunner.class.getSimpleName();
-  int POLL_INTERVAL = 30;
-  String WILDCARD = "*";
-  String API_RUN_PIPELINE = "https://genomics.googleapis.com/v1alpha2/pipelines:run";
-  String API_OPERATIONS = "https://genomics.googleapis.com/v1alpha2/";
   String[] ALL_ZONES = {
     "asia-east1-a",
     "asia-east1-b",
@@ -76,14 +39,51 @@ public interface DockerflowConstants {
     "us-west1-a",
     "us-west1-b"
   };
-  String PREFIX_INPUT = "<";
-  String PREFIX_OUTPUT = ">";
-  String DEFAULT_DISK_NAME = "data";
-  String DEFAULT_MOUNT_POINT = "/mnt/data";
-  String DEFAULT_DISK_TYPE = "PERSISTENT_HDD";
-  String DEFAULT_DISK_SIZE = "500";
-  int DEFAULT_MAX_TRIES = 3;
-  String MAX_TRIES = "max-tries";
+  String API_OPERATIONS = "https://genomics.googleapis.com/v1alpha2/";
+  String API_RUN_PIPELINE = "https://genomics.googleapis.com/v1alpha2/pipelines:run";
+  String ARGS_FILE = "args-file";
+  String BLOCKING_RUNNER = BlockingDataflowPipelineRunner.class.getSimpleName();
   /** The key in the workflow graph definition to indicate a branch in the graph. */
   String BRANCH = "BRANCH";
+  String CPU = "cpu";
+  String DEFAULT_DISK_NAME = "data";
+  String DEFAULT_DISK_SIZE = "500";
+  String DEFAULT_DISK_TYPE = "PERSISTENT_HDD";
+  String DEFAULT_MACHINE_TYPE = "n1-standard-1";
+  int DEFAULT_MAX_TRIES = 3;
+  String DEFAULT_MOUNT_POINT = "/mnt/data";
+  String DEFAULT_RUNNER = DataflowPipelineRunner.class.getSimpleName();
+  String DELETE_FILES = "delete-files";
+  String DIRECT_RUNNER = DirectPipelineRunner.class.getSimpleName();
+  String DISK_SIZE = "disk-size";
+  String GLOBALS = "globals";
+  String HELP = "help";
+  String INPUTS = "inputs";
+  String INPUTS_FROM_FILE = "inputs-fron-file";
+  String KEEP_ALIVE = "keep-alive";
+  String LOGGING = "logging";
+  String MACHINE_TYPE = "machine-type";
+  String MAX_TRIES = "max-tries";
+  String MAX_WORKERS = "max-workers";
+  String MEMORY = "memory";
+  String OUTPUTS = "outputs";
+  int POLL_INTERVAL = 30;
+  String PREEMPTIBLE = "preemptible";
+  String PREFIX_INPUT = "<";
+  String PREFIX_OUTPUT = ">";
+  String PROJECT = "project";
+  String RESUME = "resume";
+  String RUN_ID = "run-id";
+  String RUNNER = "runner";
+  String SERVICE_ACCOUNT_NAME = "service-account-name";
+  String SERVICE_ACCOUNT_SCOPES = "service-account-scopes";
+  String STAGING = "staging";
+  String STAGING_LOCATION = "stagingLocation";
+  String TASK_FILE = "task-file";
+  String TEST = "test";
+  String WILDCARD = "*";
+  String WORKFLOW_CLASS = "workflow-class";
+  String WORKFLOW_FILE = "workflow-file";
+  String WORKSPACE = "workspace";
+  String ZONES = "zones";
 }

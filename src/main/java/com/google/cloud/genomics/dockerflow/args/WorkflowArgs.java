@@ -29,7 +29,7 @@ public class WorkflowArgs extends TaskArgs {
   private Operation currentOperation;
 
   // To resolve any relative paths.
-  private String basePath;
+  private String workspace;
 
   // When there are multiple concurrent instances of the workflow running
   private int runIndex;
@@ -60,7 +60,7 @@ public class WorkflowArgs extends TaskArgs {
     if (ta instanceof WorkflowArgs) {
       WorkflowArgs wa = (WorkflowArgs) ta;
       currentOperation = wa.currentOperation;
-      basePath = wa.basePath;
+      workspace = wa.workspace;
       runIndex = wa.runIndex;
       maxTries = wa.maxTries;
       isTesting = wa.isTesting;
@@ -76,7 +76,7 @@ public class WorkflowArgs extends TaskArgs {
 
     if (args instanceof WorkflowArgs) {
       WorkflowArgs wa = (WorkflowArgs) args;
-      basePath = wa.basePath;
+      workspace = wa.workspace;
       isTesting = wa.isTesting;
       abortOnError = wa.abortOnError;
       resumeFailedRun = wa.resumeFailedRun;
@@ -91,8 +91,8 @@ public class WorkflowArgs extends TaskArgs {
     if (defaultArgs instanceof WorkflowArgs) {
       WorkflowArgs wa = (WorkflowArgs) defaultArgs;
 
-      if (basePath == null) {
-        basePath = wa.getBasePath();
+      if (workspace == null) {
+        workspace = wa.getWorkspace();
       }
       if (isTesting == null) {
         isTesting = wa.isTesting();
@@ -112,12 +112,12 @@ public class WorkflowArgs extends TaskArgs {
     this.currentOperation = operation;
   }
 
-  public String getBasePath() {
-    return basePath;
+  public String getWorkspace() {
+    return workspace;
   }
 
-  public void setBasePath(String basePath) {
-    this.basePath = basePath;
+  public void setWorkspace(String workspace) {
+    this.workspace = workspace;
   }
 
   public int getRunIndex() {

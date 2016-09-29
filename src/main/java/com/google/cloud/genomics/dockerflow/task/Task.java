@@ -392,12 +392,12 @@ public class Task implements Serializable, GraphItem {
    */
   private void resolvePaths(TaskArgs a) {
     LOG.debug("Resolving relative paths " + a);
-    if (!(a instanceof WorkflowArgs) || ((WorkflowArgs) a).getBasePath() == null) {
+    if (!(a instanceof WorkflowArgs) || ((WorkflowArgs) a).getWorkspace() == null) {
       LOG.warn("TaskArgs has no base path defined. All parameter paths must be absolute");
       return;
     }
 
-    String parentPath = ((WorkflowArgs) a).getBasePath();
+    String parentPath = ((WorkflowArgs) a).getWorkspace();
 
     // Substitute variables like ${workflow.element}
     parentPath = StringUtils.replaceAll(getGlobals(a), parentPath);
