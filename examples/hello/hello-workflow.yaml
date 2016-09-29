@@ -1,0 +1,10 @@
+defn:
+  name: HelloWorkflow
+steps:
+- defn:
+    name: Hello
+    inputParameters:
+    - name: message
+    docker:
+      imageName: ubuntu
+      cmd: echo $message

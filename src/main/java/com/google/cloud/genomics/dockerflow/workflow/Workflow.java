@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
  *
  * <p>To pass command-line parameter overrides to subtasks, qualify with the task name like
  * "task1_name.inputName=value", "task2_name.outputName=value", etc.
- *
- * @author binghamj
  */
 @SuppressWarnings("serial")
 public class Workflow extends Task {

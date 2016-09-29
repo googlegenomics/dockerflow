@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Utilities for running workflows (directed acyclic graphs) of Docker steps with Dataflow.
  * Execution of Docker steps happens through the Pipelines API.
- *
- * @author binghamj
  */
 public class TaskRunner implements DockerflowConstants {
   private static final Logger LOG = LoggerFactory.getLogger(TaskRunner.class);

@@ -43,8 +43,6 @@ import org.slf4j.LoggerFactory;
  *
  * <p>See the static methods for the various transforms. Most commonly, you'll want to use the
  * default {@link DockerDo#of(Task)}, which includes all of the other steps.
- *
- * @author binghamj
  */
 @SuppressWarnings("serial")
 public class DockerDo
