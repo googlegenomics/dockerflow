@@ -6,4 +6,5 @@ steps:
     inputParameters:
       name: message
     docker:
+      imageName: ubuntu
       cmd: echo $message
