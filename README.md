@@ -373,7 +373,9 @@ ahead to the failed step and try to rerun it.
 *   Read about [Dataflow](https://cloud.google.com/dataflow).
 *   Write your own workflows!
 
-## A word about quotas
+## FAQ and Troubleshooting
+
+### What if I want to run large batch jobs?
 
 Google Cloud Platform has various quotas that affect how many VMs and IP addresses, and how much disk space you can get. Some tips:
 
