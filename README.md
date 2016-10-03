@@ -374,3 +374,14 @@ ahead to the failed step and try to rerun it.
     (https://cloud.google.com/genomics/v1alpha2/pipelines).
 *   Read about [Dataflow](https://cloud.google.com/dataflow).
 *   Write your own workflows!
+
+## FAQ and Troubleshooting
+
+### What if I want to run large batch jobs?
+
+Google Cloud Platform has various quotas that affect how many VMs and IP addresses, and how much disk space you can get. Some tips:
+
+* [Check and potentially increase quotas](https://console.cloud.google.com/compute/quotas)
+* Consider listing all zones in the region or geography where your Cloud Storage bucket is (e.g., for standard buckets in the EU, use "eu-"; for regional buckets in US central, use "us-central-")
+* The pipeline system will queue jobs until resources are available if quotas are exceeded
+* Dockerflow will abort if any job fails. Use the '--abort=false' flag for different behavior.
