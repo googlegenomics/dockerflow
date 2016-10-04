@@ -21,7 +21,6 @@ import com.google.cloud.genomics.dockerflow.args.WorkflowArgs;
 import com.google.cloud.genomics.dockerflow.runner.Operation;
 import com.google.cloud.genomics.dockerflow.runner.TaskException;
 import com.google.cloud.genomics.dockerflow.runner.TaskRunner;
-import com.google.cloud.genomics.dockerflow.task.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +29,8 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class WaitForOperation extends DoFn<KV<String, WorkflowArgs>, KV<String, WorkflowArgs>> {
   private static final Logger LOG = LoggerFactory.getLogger(WaitForOperation.class);
-  private Task task;
 
-  public WaitForOperation(Task t) {
-    task = t;
+  public WaitForOperation() {
   }
 
   @Override
@@ -45,6 +42,7 @@ public class WaitForOperation extends DoFn<KV<String, WorkflowArgs>, KV<String, 
     // Task is already done.
     if (o != null && o.getDone()) {
       c.output(c.element());
+
     // Wait for it
     } else {
       if (wa.isTesting() != null && wa.isTesting()) {
@@ -58,21 +56,27 @@ public class WaitForOperation extends DoFn<KV<String, WorkflowArgs>, KV<String, 
       LOG.info("Operation name: " + o.getName() + " completed.");
 
       // Check for errors and abort if that's the policy
-      if (o.getError() != null
-          && task.getArgs() instanceof WorkflowArgs
-          && ((WorkflowArgs) task.getArgs()).getAbortOnError()) {
+      if (o.getError() != null) {
+
         String msg = o.getError().getMessage();
         if (o.getError().getDetails() != null) {
           msg += ". " + o.getError().getDetails();
         }
-        // Don't abort if it was due to VM preemption
-        if (msg.indexOf("stopped unexpectedly") < 0) {
-          throw new TaskException("Operation " + o.getName() + " failed. Details: " + msg);
-        } else {
+
+        // VM was preempted
+        if (msg.indexOf("stopped unexpectedly") >= 0) {
           LOG.info(
               "VM was preempted. Task will be retried up to " 
               + wa.getMaxTries()
               + " attempts.");
+
+        // Abort
+        } else if (wa.getAbortOnError()) {
+            throw new TaskException("Operation " + o.getName() + " failed. Details: " + msg);
+
+        // Log the error
+        } else {
+          LOG.info("Operation " + o.getName() + " failed, but not aborting. Details: " + msg);
         }
       }
 

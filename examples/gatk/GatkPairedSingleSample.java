@@ -26,10 +26,10 @@ import com.google.cloud.genomics.dockerflow.workflow.Workflow.Steps;
 import com.google.cloud.genomics.dockerflow.workflow.WorkflowDefn;
 
 /**
- * As an example of running a real-world workflow with Pipelines API and
- * Dockerflow, this is a translation of the
+ * As an example of running a real-world workflow with Dockerflow, this is a translation
+ * of the Broad Institute's
  * <a href="https://github.com/broadinstitute/wdl/blob/develop/scripts/broad_pipelines">
- * GATK WDL file</a> from June 2016.
+ * GATK WDL file</a>.
  */
 public class GatkPairedSingleSample implements WorkflowDefn {
   static final String GATK_IMAGE = "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018";
@@ -94,7 +94,7 @@ public class GatkPairedSingleSample implements WorkflowDefn {
       .inputFile("ref_fasta", "${ref_fasta}")
       .inputFile("ref_fasta_index", "${ref_fasta_index}")
       .inputFile("ref_dict", "${ref_dict}")
-       .outputFile("output_bam", "${output_bam_basename}.bam")
+      .outputFile("output_bam", "${output_bam_basename}.bam")
       .memory(3.5)
       .preemptible(true)
       .diskSize("${flowcell_medium_disk}")
