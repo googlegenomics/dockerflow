@@ -78,13 +78,13 @@ public class Task implements Serializable, GraphItem {
    */
   public static final String TASK_SHARD = "task.shard";
 
-  /** The log file location for this task. It can be reference as ${task.name}/task.log */
+  /** The log file location for this task. It can be referenced as ${task.name}/task.log */
   public static final String TASK_LOG = "task.log";
 
-  /** The stdout file location for this task. It can be reference as ${task.name}/task.stdout */
+  /** The stdout file location for this task. It can be referenced as ${task.name}/task.stdout */
   public static final String TASK_STDOUT = "task.stdout";
 
-  /** The stderr file location for this task. It can be reference as ${task.name}/task.stderr */
+  /** The stderr file location for this task. It can be referenced as ${task.name}/task.stderr */
   public static final String TASK_STDERR = "task.stderr";
 
   /**
@@ -367,18 +367,23 @@ public class Task implements Serializable, GraphItem {
       String val = args.get(p.getName()) == null ? p.getDefaultValue() : args.get(p.getName());
 
       if (val != null && p.isFile()) {
+
         if (p.getLocalCopy() == null) {
           p.setLocalCopy(new LocalCopy());
           p.getLocalCopy().setDisk(DockerflowConstants.DEFAULT_DISK_NAME);
         }
 
-        // An array; special handling
         if (p.isArray()) {
           expandArray(p);
-        // Ordinary path
-        } else {
-          LOG.debug("Normal file: " + p.getName() + ", path: " + val);
+
+        } else if (p.getLocalCopy().getPath() == null) {
+          LOG.debug("File: " + p.getName() + ", path: " + val);
           p.getLocalCopy().setPath(FileUtils.localPath(val));
+
+        } else {
+          LOG.debug(
+              "File " + p.getName() + " set to " + 
+              p.getLocalCopy().getPath() + " by workflow author"); 
         }
       }
     }
@@ -416,7 +421,9 @@ public class Task implements Serializable, GraphItem {
 
       String path = args.contains(p.getName()) ? args.get(p.getName()) : p.getDefaultValue();
       if (path == null) {
-        throw new NullPointerException("Null value for path " + p.getName());
+        throw new NullPointerException(
+            "Null value for path " + p.getName()
+                + " in task " + defn.getName());
       }
 
       // Skip javascript that's unevaluated (like in a scatter step)

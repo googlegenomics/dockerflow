@@ -37,11 +37,11 @@ import com.google.cloud.genomics.dockerflow.workflow.Workflow.Steps;
 import com.google.cloud.genomics.dockerflow.workflow.WorkflowDefn;
 
 /**
- * An alternate implementation of GATK, showing how to define the workflow using Dataflow
- * transforms directly rather than the Dockerflow workflow builder. This is useful if you
- * want to mix and match Docker steps with other Dataflow transforms. (Note that there's code
- * duplication with GatkPairedSingleSample except for the last method at the bottom. The
- * reason is to provide a self-contained single-file example.)
+ * An implementation of Broad Institute GATK, showing how to define the workflow
+ * using Dataflow transforms directly rather than the Dockerflow workflow builder. This is
+ * useful if you want to mix and match Docker steps with other Dataflow transforms. (Note
+ * that there's code duplication with GatkPairedSingleSample except for the last method at
+ * the bottom. The reason is to provide a self-contained single-file example.)
  */
 public class GatkPairedSingleSampleAlt implements WorkflowDefn {
   static final String GATK_IMAGE = "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018";

@@ -163,7 +163,7 @@ public class DockerDo
 
       return pc.apply(ParDo.named("Start").of(new StartTask(task, attempt)))
           .apply(new BreakFusion<KV<String, WorkflowArgs>>("AfterStarted"))
-          .apply(ParDo.named("Wait").of(new WaitForOperation(task)));
+          .apply(ParDo.named("Wait").of(new WaitForOperation()));
     }
   }
 

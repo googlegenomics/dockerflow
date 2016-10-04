@@ -8,6 +8,9 @@ Dockerflow makes it easy to run a multi-step workflow of Docker tasks using
 [Google Cloud Dataflow](https://cloud.google.com/dataflow) for orchestration.
 Docker steps are run using the [Pipelines API](https://cloud.google.com/genomics/v1alpha2/pipelines).
 
+You can run Dockerflow from a shell on your laptop, and the job will run in 
+Google Cloud Platform using Dataflow's fully managed service and web UI.
+
 Dockerflow workflows can be defined in [YAML](http://yaml.org) files, or by writing
 Java code. Examples of workflows defined in YAML can be found in
 
