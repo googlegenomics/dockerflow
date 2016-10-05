@@ -180,57 +180,23 @@ public class FileUtils {
   }
 
   /**
-   * The path where the Pipelines API will copy the task log.
+   * The resolved path where the Pipelines API will copy the task log.
    *
    * @param path the GCS path passed to the Pipelines API
    * @param operationName the operation name, or null if unknown
-   * @return the resolved GCS path to the log file
    */
   public static String logPath(String path, String operationName) {
-    if (path == null) {
-      throw new IllegalArgumentException("Path cannot be null");
-    }
-
-    String retval = path;
-    if (path.matches("^(.*\\.\\w*)$")) {
-      retval = path;
-    } else {
-      if (operationName == null) {
-        throw new IllegalArgumentException(
-            "operationName cannot be null if logging path is a directory");
-      }
-      retval = path + "/" + operationName.substring(operationName.indexOf("/") + 1) + ".log";
-    }
-    return retval;
+    return logPath(path, operationName, "");
   }
 
   /**
-   * The path where the Pipelines API will copy the contents of stdout.
+   * The resolved path where the Pipelines API will copy the contents of stdout.
    *
    * @param path the GCS path passed to the Pipelines API
    * @param operationName the operation name, or null if unknown
-   * @return the resolved GCS path to the log file
    */
   public static String stdoutPath(String path, String operationName) {
-    if (path == null) {
-      throw new IllegalArgumentException("Path cannot be null");
-    }
-
-    String retval = path;
-    if (path.matches("^(.*\\.\\w+)$")) {
-      retval =
-          path.substring(0, path.lastIndexOf("."))
-              + "-stdout"
-              + path.substring(path.lastIndexOf("."));
-    } else {
-      if (operationName == null) {
-        throw new IllegalArgumentException(
-            "operationName cannot be null if logging path is a directory");
-      }
-      retval =
-          path + "/" + operationName.substring(operationName.indexOf("/") + 1) + "-stdout.log";
-    }
-    return retval;
+    return logPath(path, operationName, "-stdout");
   }
 
   /**
@@ -238,9 +204,19 @@ public class FileUtils {
    *
    * @param path the GCS path passed to the Pipelines API
    * @param operationName the operation name, or null if unknown
-   * @return the resolved GCS path to the log file
    */
   public static String stderrPath(String path, String operationName) {
+    return logPath(path, operationName, "-stderr");
+  }
+
+  /**
+   * The resolved path where the Pipelines API will copy the contents of stdout.
+   *
+   * @param path the GCS path passed to the Pipelines API
+   * @param operationName the operation name, or null if unknown
+   * @param logName: one of empty string, "-stderr" or "-stdout"
+   */
+  private static String logPath(String path, String operationName, String logName) {
     if (path == null) {
       throw new IllegalArgumentException("Path cannot be null");
     }
@@ -249,7 +225,7 @@ public class FileUtils {
     if (path.matches("^(.*\\.\\w*)$")) {
       retval =
           path.substring(0, path.lastIndexOf("."))
-              + "-stderr"
+              + logName
               + path.substring(path.lastIndexOf("."));
     } else {
       if (operationName == null) {
@@ -257,7 +233,7 @@ public class FileUtils {
             "operationName cannot be null if logging path is a directory");
       }
       retval =
-          path + "/" + operationName.substring(operationName.indexOf("/") + 1) + "-stderr.log";
+          path + "/" + operationName.substring(operationName.indexOf("/") + 1) + logName + ".log";
     }
     return retval;
   }
