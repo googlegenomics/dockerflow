@@ -69,7 +69,7 @@ steps:
             FASTQ=/dev/stdout \
             INTERLEAVE=true \
             NON_PF=true | \
-          /usr/gitc/${bwa_commandline} ($ref_fasta} /dev/stdin -  2> >(tee ${bwa_stderr_log} >&2) | \
+          /usr/gitc/${bwa_commandline} ${ref_fasta} /dev/stdin -  2> >(tee ${bwa_stderr_log} >&2) | \
           samtools view -1 - > ${output_bam} && \
           grep -m1 "read .* ALT contigs" ${bwa_stderr_log} | \
           grep -v "read 0 ALT contigs"
