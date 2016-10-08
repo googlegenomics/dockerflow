@@ -73,18 +73,20 @@ Run the following steps on your laptop or local workstation:
 
         git clone https://github.com/googlegenomics/dockerflow
 
-2.  Build it with Maven.
+2.  Build it with Maven and make the launcher script executable.
 
         cd dockerflow
-        mvn package -DskipITs
+        mvn package -DskipTests
+        chmod +x dockerflow
+    
+  You may want to add the dockerflow script to your path.
 
 3.  Run a sample workflow:
 
-        java -jar target/dockerflow*dependencies.jar \
-        --project=MY-PROJECT \
-        --workflow-file=src/test/resources/linear-graph.yaml \
-        --workspace=gs://MY-BUCKET/MY-PATH \
-        --runner=DirectPipelineRunner
+        dockerflow --project=MY-PROJECT \
+            --workflow-file=src/test/resources/linear-graph.yaml \
+            --workspace=gs://MY-BUCKET/MY-PATH \
+            --runner=DirectPipelineRunner
 
 Set `MY-PROJECT` to your cloud project name, and set `MY-BUCKET` and `MY-PATH`
 to your cloud bucket and folder.
@@ -232,7 +234,7 @@ The task will be run twice in parallel, once with `file1.txt` and once with
 If you have a large number of values you'd like to run at once, you can pass
 them in from a file, using the `--inputs-from-file` option.
 
-    java -jar target/dockerflow*dependencies.jar \
+    dockerflow \
         --project=MY_PROJECT \
         --workflow-file=src/test/resources/parallel-graph.yaml \
         --workspace=gs://MY-BUCKET/MY-PATH \
@@ -328,8 +330,7 @@ task names in the included files will be used.
 
 Finally, you can set parameters from the command-line:
 
-    java -jar target/dockerflow*dependencies.jar \
-        --project=MY_PROJECT \
+    dockerflow --project=MY_PROJECT \
         --workflow-file=src/test/resources/parallel-graph.yaml \
         --workspace=gs://MY-BUCKET/MY-PATH \
         --outputs=stepOne.outputFile=output-one.txt,\

@@ -24,7 +24,7 @@ Take a look at `gatk-workflow.yaml` and `GatkPairedSingleSample.java` for detail
 
 ## Prerequisites
 
-1. Build the [Dockerflow](/googlegenomics/dockerflow) jar file
+1. Complete the [Dockerflow](/googlegenomics/dockerflow) Getting Started instructions.
 
 ## Running the example
 
@@ -36,8 +36,7 @@ compiled.
 
 To run the example using the YAML file:
 
-	java -jar PATH/TO/dockerflow*dependencies.jar \
-	    --project=MY-PROJECT \
+	dockerflow --project=MY-PROJECT \
 	    --workflow-file=gatk-workflow.yaml \
 	    --args-file=gatk-args.yaml \
 	    --workspace=gs://MY-BUCKET/MY-PATH \
@@ -64,8 +63,7 @@ To run the same example using the Java definition rather than YAML, first compil
 
 Then run the workflow from the Java class:
 
-	java -jar PATH/TO/dockerflow*dependencies.jar \
-	    --project=MY-PROJECT \
+	dockerflow --project=MY-PROJECT \
 	    --workflow-class=GatkPairedSingleSample \
 	    --args-file=gatk-params.yaml \
 	    --workspace=gs://MY-BUCKET/MY-PATH \
