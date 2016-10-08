@@ -73,15 +73,19 @@ Run the following steps on your laptop or local workstation:
 
         git clone https://github.com/googlegenomics/dockerflow
 
-2.  Build it with Maven and make the launcher script executable.
+2.  Build it with Maven.
 
         cd dockerflow
         mvn package -DskipTests
+
+3. Set up the DOCKERFLOW_HOME environment variable and launcher.
+
+        export DOCKERFLOW_HOME=`pwd`
         chmod +x dockerflow
     
   You may want to add the dockerflow script to your path.
 
-3.  Run a sample workflow:
+4.  Run a sample workflow:
 
         dockerflow --project=MY-PROJECT \
             --workflow-file=src/test/resources/linear-graph.yaml \
