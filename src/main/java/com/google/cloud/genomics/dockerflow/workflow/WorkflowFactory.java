@@ -209,7 +209,7 @@ public class WorkflowFactory implements DockerflowConstants {
     if (m.containsKey(LOGGING)) {
       b.logging(m.get(LOGGING));
     } else if (m.containsKey(WORKSPACE)) {
-      b.logging(m.get(WORKSPACE) + "/logs");
+      b.logging(m.get(WORKSPACE));
     }
     if (m.containsKey(PROJECT)) {
       b.project(m.get(PROJECT));
