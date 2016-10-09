@@ -47,11 +47,8 @@ steps:
     - name: "output_bam"
       defaultValue: "${output_bam_basename}.bam"
       type: file
-    - name: "output_bam_index"
-      defaultValue: "${output_bam_basename}.bai"
-      type: file
-    - name: "output_bam_md5"
-      defaultValue: "${output_bam_basename}.bam.md5"
+    - name: "bwa_stderr_log"
+      defaultValue: "${output_bam_basename}.bwa.stderr.log"
       type: file
     resources:
       minimumCpuCores: "16"
@@ -673,7 +670,7 @@ args:
 
     SamToFastqAndBwaMem.input_bam: "${flowcell_unmapped_bams}"
     SamToFastqAndBwaMem.output_bam_basename: "${= '${input_bam}'.replace(/gs:.*\\//, '').replace(/.bam/, '.unmerged'); }"
-    SamToFastqAndBwaMem.task.diskSize: "${flowcell_small_disk}"
+    SamToFastqAndBwaMem.task.diskSize: "${flowcell_medium_disk}"
 
     MergeBamAlignment.unmapped_bam: "${SamToFastqAndBwaMem.input_bam}"
     MergeBamAlignment.bwa_version: "${BwaVersion.task.stdout}"

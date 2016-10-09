@@ -71,8 +71,6 @@ public class GatkPairedSingleSample implements WorkflowDefn {
         "  INPUT=${input_bam} \\\n" +
         "  FASTQ=/dev/stdout \\\n" +
         "  INTERLEAVE=true \\\n" +
-        "  CLIPPING_ATTRIBUTE=XT \\\n" +
-        "  CLIPPING_ACTION=2 \\\n" +
         "  NON_PF=true |\\\n" +
         "  /usr/gitc/${bwa_commandline} ${ref_fasta} /dev/stdin -  2> >(tee ${bwa_stderr_log} >&2) | \\\n" +
         "  samtools view -1 - > ${output_bam} && \\\n" +
