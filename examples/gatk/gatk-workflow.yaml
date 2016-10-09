@@ -369,7 +369,8 @@ steps:
           --useOriginalQualities \
           -O ${recalibration_report} \
           -knownSites ${dbSNP_vcf} \
-          -knownSites ${known_indels_sites_VCFs} \
+          -knownSites ${known_snps_sites_vcf} \
+          -knownSites ${known_indels_sites_vcf} \
           -L ${sequence_group_interval}
   scatterBy: "sequence_group_interval"
   args:
@@ -453,7 +454,7 @@ steps:
       cmd: |
         java -Xmx3000m -jar /usr/gitc/GATK4.jar \
           GatherBQSRReports \
-          -I ${sep=' -I ' input_bqsr_reports} \
+          -I ${input_bqsr_reports} \
           -O ${output_bqsr_report}
 
 # Apply Base Quality Score Recalibration (BQSR) model
@@ -480,8 +481,6 @@ steps:
     - name: "ref_fasta_index"
       defaultValue: "${ref_fasta_index}"
       type: file
-    - name: "pipeline_run"
-      defaultValue: "${workflow.index}"
     outputParameters:
     - name: "recalibrated_bam"
       defaultValue: "${output_bam_basename}.bam"
@@ -504,12 +503,11 @@ steps:
           -R ${ref_fasta} \
           -I ${input_bam} \
           --useOriginalQualities \
-          -O ${output_bam} \
+          -O ${recalibrated_bam} \
           -bqsr ${recalibration_report} \
           -SQQ 10 -SQQ 20 -SQQ 30 -SQQ 40 \
           --emit_original_quals \
           -L ${sequence_group_interval}
-  gatherBy: "pipeline_run"
 
 # Combine multiple recalibrated BAM files from scattered ApplyRecalibration runs
 - defn:
@@ -694,7 +692,7 @@ args:
     BaseRecalibrator.input_bam: "${SortAndFixSampleBam.output_bam}"
     BaseRecalibrator.input_bam_index: "${SortAndFixSampleBam.output_bam_index}"
     BaseRecalibrator.recalibration_report_filename: "${sample_name}.recal_data.csv"
-    BaseRecalibrator.sequence_group_interval: "${CreateSequenceGroupingTSV.sequence_grouping}"
+    BaseRecalibrator.sequence_group_interval: "${CreateSequenceGroupingTSV.task.stdout}"
     BaseRecalibrator.task.diskSize: "${agg_small_disk}"
 
     ApplyBQSR.input_bam: "${SortAndFixSampleBam.output_bam}"

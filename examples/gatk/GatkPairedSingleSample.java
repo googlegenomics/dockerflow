@@ -235,7 +235,7 @@ public class GatkPairedSingleSample implements WorkflowDefn {
       .inputFile("known_snps_sites_vcf", "${known_snps_sites_vcf}")
       .inputFile("known_snps_sites_vcf_index", "${known_snps_sites_vcf_index}")
       .inputFile("known_indels_sites_vcf", "${known_indels_sites_vcf}")
-      .inputFileArray("known_indels_sites_vcf_index", " -knownSites ", "${known_indels_sites_vcf_index}")
+      .inputFile("known_indels_sites_vcf_index", "${known_indels_sites_vcf_index}")
       .inputFile("ref_dict", "${ref_dict}")
       .inputFile("ref_fasta", "${ref_fasta}")
       .inputFile("ref_fasta_index", "${ref_fasta_index}")
