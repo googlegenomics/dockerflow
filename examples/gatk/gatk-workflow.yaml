@@ -54,8 +54,8 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minCpuCores: "16"
-      minRamGb: "14"
+      minimumCpuCores: "16"
+      minimumRamGb: "14"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -106,7 +106,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam"
       type: file
     resources:
-      minRamGb: "3.5"
+      minimumRamGb: "3.5"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -169,7 +169,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "5"
+      minimumRamGb: "5"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -208,7 +208,7 @@ steps:
       defaultValue: "${metrics_filename}"
       type: file
     resources:
-      minRamGb: "7"
+      minimumRamGb: "7"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -252,7 +252,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "5"
+      minimumRamGb: "5"
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
       cmd: |
@@ -279,7 +279,7 @@ steps:
       defaultValue: "${ref_dict}"
       type: file
     resources:
-      minRamGb: "2"
+      minimumRamGb: "2"
       preemptible: true
     docker:
       imageName: "python:2.7"
@@ -357,7 +357,7 @@ steps:
       defaultValue: "${recalibration_report_filename}"
       type: file
     resources:
-      minRamGb: "6"
+      minimumRamGb: "6"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -413,7 +413,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "3.5"
+      minimumRamGb: "3.5"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -449,7 +449,7 @@ steps:
       defaultValue: "${output_report_filename}"
       type: file
     resources:
-      minRamGb: "3.5"
+      minimumRamGb: "3.5"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -493,7 +493,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "3.5"
+      minimumRamGb: "3.5"
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
       cmd: |
@@ -536,7 +536,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "3"
+      minimumRamGb: "3"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -570,7 +570,7 @@ steps:
       defaultValue: "${output_bam_basename}.crai"
       type: file
     resources:
-      minRamGb: "3"
+      minimumRamGb: "3"
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
       cmd: |
@@ -614,7 +614,7 @@ steps:
       defaultValue: "${gvcf_basename}.vcf.gz.tbi"
       type: file
     resources:
-      minRamGb: "10"
+      minimumRamGb: "10"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -656,7 +656,7 @@ steps:
       defaultValue: "${output_vcf_name}.tbi"
       type: file
     resources:
-      minRamGb: "3"
+      minimumRamGb: "3"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
