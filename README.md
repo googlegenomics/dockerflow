@@ -80,7 +80,7 @@ Run the following steps on your laptop or local workstation:
 
 3. Set up the DOCKERFLOW_HOME environment.
 
-        export DOCKERFLOW_HOME=`pwd`
+        export DOCKERFLOW_HOME="$(command pwd)"
         export PATH=$PATH:$DOCKERFLOW_HOME/bin
         chmod +x bin/*
 
