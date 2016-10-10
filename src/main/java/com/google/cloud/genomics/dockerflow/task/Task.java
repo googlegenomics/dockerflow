@@ -276,12 +276,6 @@ public class Task implements Serializable, GraphItem {
       // Only load values for the current task
       if (prefix == null || key.startsWith(prefix)) {
 
-        // For workflow args, remove the prefix
-        if (prefix != null && key.startsWith(prefix)) {
-          LOG.debug("Removing prefix from key " + key);
-          key = key.substring(prefix.length());
-        }
-
         // If the value should be loaded from file
         if (a.isFromFile(key) && !a.get(key).startsWith("${") && !a.get(key).contains("\n")) {
 
@@ -455,7 +449,17 @@ public class Task implements Serializable, GraphItem {
         if (i > 0) {
           sb.append(separator);
         }
-        sb.append(FileUtils.resolve(s, parentPath));
+        try {
+          sb.append(FileUtils.resolve(s, parentPath));
+        } catch(Exception e) {
+          String msg = "Failed to resolve path: " + s;
+          if (System.getenv(DockerflowConstants.DOCKERFLOW_TEST) != null
+              && Boolean.parseBoolean(System.getenv(DockerflowConstants.DOCKERFLOW_TEST))) {
+            LOG.warn(msg + ". Cause: " + e.getMessage());
+          } else {
+            throw new IllegalStateException(msg, e);
+          }
+        }
       }
       LOG.debug("Resolved path to: " + sb);
 

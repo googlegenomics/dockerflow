@@ -124,7 +124,8 @@ public class FileUtils {
    * @return resolved path
    * @throws URISyntaxException
    */
-  public static String resolve(String path, String parent) {
+  public static String resolve(String path, String parent) 
+      throws IOException, URISyntaxException {
     LOG.debug("Resolve " + path + " vs parent " + parent);
     String retval;
 
@@ -136,17 +137,9 @@ public class FileUtils {
       retval = parent.substring(0, parent.lastIndexOf("/") + 1) + path;
     }
     if (retval.startsWith("gs:/")) {
-      try {
-        retval = new URI(retval).normalize().toString();
-      } catch (URISyntaxException e) {
-        throw new IllegalStateException(e.getMessage(), e);
-      }
+      retval = new URI(retval).normalize().toString();
     } else {
-      try {
-        retval = new File(retval).getCanonicalPath();
-      } catch (IOException e) {
-        throw new IllegalStateException(e.getMessage(), e);
-      }
+      retval = new File(retval).getCanonicalPath();
     }
     return retval;
   }

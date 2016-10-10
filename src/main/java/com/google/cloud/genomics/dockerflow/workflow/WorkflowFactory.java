@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,7 +203,20 @@ public class WorkflowFactory implements DockerflowConstants {
     Map<String, String> m = StringUtils.parseArgs(args);
     ArgsBuilder b = ArgsBuilder.of();
 
-    // Set all other parameters
+    if (System.getenv(DOCKERFLOW_PROJECT) != null) {
+      b.project(System.getenv(DOCKERFLOW_PROJECT));
+    }
+    if (m.containsKey(PROJECT)) {
+      b.project(m.get(PROJECT));
+    }
+
+    if (System.getenv(DOCKERFLOW_WORKSPACE) != null) {
+      b.logging(System.getenv(DOCKERFLOW_WORKSPACE));
+    }
+
+    if (System.getenv(DOCKERFLOW_WORKSPACE) != null) {
+      b.workspace(System.getenv(DOCKERFLOW_WORKSPACE));
+    }
     if (m.containsKey(WORKSPACE)) {
       b.workspace(m.get(WORKSPACE));
     }
@@ -211,9 +225,7 @@ public class WorkflowFactory implements DockerflowConstants {
     } else if (m.containsKey(WORKSPACE)) {
       b.logging(m.get(WORKSPACE));
     }
-    if (m.containsKey(PROJECT)) {
-      b.project(m.get(PROJECT));
-    }
+
     if (m.containsKey(INPUTS)) {
       Map<String, String> kv = StringUtils.parseParameters(m.get(INPUTS), false);
       for (String k : kv.keySet()) {
@@ -223,7 +235,7 @@ public class WorkflowFactory implements DockerflowConstants {
     if (m.containsKey(INPUTS_FROM_FILE)) {
       Map<String, String> kv = StringUtils.parseParameters(m.get(INPUTS_FROM_FILE), true);
       for (String k : kv.keySet()) {
-        b.input(k, kv.get(k));
+        b.inputFromFile(k, kv.get(k));
       }
     }
     if (m.containsKey(OUTPUTS)) {
@@ -236,13 +248,13 @@ public class WorkflowFactory implements DockerflowConstants {
       b.zones(m.get(ZONES).split(","));
     }
     if (m.containsKey(DISK_SIZE)) {
-      b.diskSize(Integer.parseInt(m.get(DISK_SIZE)));
+      b.diskSize(m.get(DISK_SIZE));
     }
     if (m.containsKey(CPU)) {
       b.cpu(Integer.parseInt(m.get(CPU)));
     }
     if (m.containsKey(MEMORY)) {
-      b.memory(Double.parseDouble(m.get(MEMORY)));
+      b.memory(m.get(MEMORY));
     }
     if (m.containsKey(PREEMPTIBLE)) {
       b.preemptible(Boolean.parseBoolean(m.get(PREEMPTIBLE)));
@@ -280,11 +292,112 @@ public class WorkflowFactory implements DockerflowConstants {
     if (wa.getProjectId() == null) {
       throw new IllegalArgumentException("--" + PROJECT + " is required");
     }
-    if (wa.getLogging().getGcsPath() == null) {
+    if (wa.getLogging() != null && wa.getLogging().getGcsPath() == null) {
       throw new IllegalArgumentException("--" + LOGGING + " is required");
     }
 
     return wa;
+  }
+  
+  public static Workflow createTask(String[] args) throws IOException {
+    Map<String, String> m = StringUtils.parseArgs(args);
+    TaskBuilder b = TaskBuilder.named(null);
+
+    if (m.containsKey(NAME)) {
+      b.name(m.get(NAME)); 
+    }
+
+    if (System.getenv(DOCKERFLOW_PROJECT) != null) {
+      b.project(System.getenv(DOCKERFLOW_PROJECT));
+    }
+    if (m.containsKey(PROJECT)) {
+      b.project(m.get(PROJECT));
+    }
+
+    if (System.getenv(DOCKERFLOW_WORKSPACE) != null) {
+      b.logging(System.getenv(DOCKERFLOW_WORKSPACE));
+    }
+    if (m.containsKey(LOGGING)) {
+      b.logging(m.get(LOGGING));
+    } else if (m.containsKey(WORKSPACE)) {
+      b.logging(m.get(WORKSPACE));
+    }
+    if (m.containsKey(INPUTS)) {
+      Map<String, String> kv = StringUtils.parseParameters(m.get(INPUTS), false);
+      for (String k : kv.keySet()) {
+        b.input(k, kv.get(k));
+      }
+    }
+    if (m.containsKey(INPUTS_FROM_FILE)) {
+      Map<String, String> kv = StringUtils.parseParameters(m.get(INPUTS_FROM_FILE), true);
+      for (String k : kv.keySet()) {
+        b.inputFromFile(k, kv.get(k));
+      }
+    }
+    if (m.containsKey(INPUT_FILE)) {
+      Map<String, String> kv = StringUtils.parseParameters(m.get(INPUT_FILE), false);
+      for (String k : kv.keySet()) {
+        if (k.contains("[")) {
+          String name = k.substring(0, k.indexOf("["));
+          String sep = k.substring(k.indexOf("[") + 1, k.lastIndexOf("]"))
+              .replace("\\\"\\'", "");
+          b.inputFileArray(name, sep, kv.get(k));
+        } else {
+          b.inputFile(k, kv.get(k));
+        }
+      }
+    }
+    if (m.containsKey(OUTPUTS)) {
+      Map<String, String> kv = StringUtils.parseParameters(m.get(OUTPUTS), false);
+      for (String k : kv.keySet()) {
+        b.outputFile(k, kv.get(k));
+      }
+    }
+    if (m.containsKey(DOCKER)) {
+      b.docker(m.get(DOCKER));
+    }
+    if (m.containsKey(SCATTER)) {
+      b.scatterBy(m.get(SCATTER));
+    }
+    if (m.containsKey(SCRIPT)) {
+      b.script(m.get(SCRIPT));
+    }
+    if (m.containsKey(SCRIPT_FILE)) {
+      b.scriptFile(m.get(SCRIPT_FILE));
+    }
+    if (m.containsKey(ZONES)) {
+      b.zones(m.get(ZONES).split(","));
+    }
+    if (m.containsKey(DISK_SIZE)) {
+      b.diskSize(m.get(DISK_SIZE));
+    }
+    if (m.containsKey(CPU)) {
+      b.cpu(m.get(CPU));
+    }
+    if (m.containsKey(MEMORY)) {
+      b.memory(m.get(MEMORY));
+    }
+    if (m.containsKey(PREEMPTIBLE)) {
+      b.preemptible(Boolean.parseBoolean(m.get(PREEMPTIBLE)));
+    }
+    if (m.containsKey(RUN_ID)) {
+      b.clientId(m.get(RUN_ID));
+    }
+    if (m.containsKey(SERVICE_ACCOUNT_NAME)) {
+      b.serviceAccountEmail(m.get(SERVICE_ACCOUNT_NAME));
+    }
+    if (m.containsKey(SERVICE_ACCOUNT_SCOPES)) {
+      b.serviceAccountScopes(Arrays.asList(m.get(SERVICE_ACCOUNT_SCOPES).split(",")));
+    }
+
+    if (System.getenv(DOCKERFLOW_TEST) != null) {
+      b.testing(Boolean.parseBoolean(System.getenv(DOCKERFLOW_TEST)));
+    }
+    if (m.containsKey(TEST)) {
+      b.testing(Boolean.parseBoolean(m.get(TEST)));
+    }
+    
+    return b.build();
   }
 
   /** Expand wildcards for zones, like us-central* or eu*, to include the list of matching zones. */

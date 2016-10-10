@@ -26,6 +26,8 @@ import com.google.cloud.genomics.dockerflow.workflow.Workflow;
 import com.google.cloud.genomics.dockerflow.workflow.WorkflowFactory;
 
 import java.io.IOException;
+import java.util.Map;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -261,5 +263,20 @@ public class DockerflowTest implements DockerflowConstants {
       String output = TestUtils.readAll(utils.baseDir + "/complex/stepSix/task.log");
       LOG.info("\"" + output);
     }
+  }
+
+  @Test
+  public void testFileParsing() throws Exception {
+    Map<String, String> m = StringUtils.parseParameters("key_1=${val_1},key_2=${val_2}", false);
+    
+    assertEquals("Wrong number of keys", 2, m.size());
+  }
+
+  @Test
+  public void testArrayParsing() throws Exception {
+    Map<String, String> m = StringUtils.parseParameters("foo[\" sep=val \"]=bar", false);
+    
+    assertEquals("Wrong number of keys", 1, m.size());
+    assertEquals("Array key parsed incorrectly", "foo[\" sep-val \"]", m.keySet().iterator().next());
   }
 }
