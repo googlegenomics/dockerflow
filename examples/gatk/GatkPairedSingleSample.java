@@ -71,8 +71,6 @@ public class GatkPairedSingleSample implements WorkflowDefn {
         "  INPUT=${input_bam} \\\n" +
         "  FASTQ=/dev/stdout \\\n" +
         "  INTERLEAVE=true \\\n" +
-        "  CLIPPING_ATTRIBUTE=XT \\\n" +
-        "  CLIPPING_ACTION=2 \\\n" +
         "  NON_PF=true |\\\n" +
         "  /usr/gitc/${bwa_commandline} ${ref_fasta} /dev/stdin -  2> >(tee ${bwa_stderr_log} >&2) | \\\n" +
         "  samtools view -1 - > ${output_bam} && \\\n" +
@@ -237,7 +235,7 @@ public class GatkPairedSingleSample implements WorkflowDefn {
       .inputFile("known_snps_sites_vcf", "${known_snps_sites_vcf}")
       .inputFile("known_snps_sites_vcf_index", "${known_snps_sites_vcf_index}")
       .inputFile("known_indels_sites_vcf", "${known_indels_sites_vcf}")
-      .inputFileArray("known_indels_sites_vcf_index", " -knownSites ", "${known_indels_sites_vcf_index}")
+      .inputFile("known_indels_sites_vcf_index", "${known_indels_sites_vcf_index}")
       .inputFile("ref_dict", "${ref_dict}")
       .inputFile("ref_fasta", "${ref_fasta}")
       .inputFile("ref_fasta_index", "${ref_fasta_index}")

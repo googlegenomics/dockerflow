@@ -1,0 +1,4 @@
+#!/bin/sh
+: "${DOCKERFLOW_HOME:?Error: DOCKERFLOW_HOME not set. It should be the dockerflow installation folder}"
+
+java -jar ${DOCKERFLOW_HOME}/target/dockerflow*dependencies.jar "$@"

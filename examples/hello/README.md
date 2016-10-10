@@ -8,7 +8,7 @@ This is a "hello, world" example of Dockerflow, showing both YAML and Java versi
 
 ## Prerequisites
 
-1. Build the [Dockerflow](/googlegenomics/dockerflow) jar file
+1. Complete the [Dockerflow](/googlegenomics/dockerflow) Getting Started instructions.
 
 ## Running the example
 
@@ -19,8 +19,7 @@ if you prefer to write Java code or YAML.
 
 To run the example using the YAML file:
 
-	java -jar PATH/TO/dockerflow*dependencies.jar \
-	    --project=MY-PROJECT \
+	dockerflow --project=MY-PROJECT \
 	    --workflow-file=hello-workflow.yaml \
 	    --args-file=hello-args.yaml \
 	    --workspace=gs://MY-BUCKET/MY-PATH
@@ -39,8 +38,7 @@ To run the same example using the Java definition rather than YAML, first compil
 
 Then run the workflow from the Java class:
 
-	java -jar PATH/TO/dockerflow*dependencies.jar \
-	    --project=MY-PROJECT \
+	dockerflow --project=MY-PROJECT \
 	    --workflow-class=HelloWorkflow \
 	    --args-file=hello-args.yaml \
 	    --workspace=gs://MY-BUCKET/MY-PATH

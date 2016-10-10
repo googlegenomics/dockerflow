@@ -18,8 +18,6 @@ package com.google.cloud.genomics.dockerflow.workflow;
 import com.google.cloud.genomics.dockerflow.DockerflowConstants;
 import com.google.cloud.genomics.dockerflow.args.ArgsBuilder;
 import com.google.cloud.genomics.dockerflow.args.TaskArgs;
-import com.google.cloud.genomics.dockerflow.args.TaskArgs.Logging;
-import com.google.cloud.genomics.dockerflow.args.TaskArgs.ServiceAccount;
 import com.google.cloud.genomics.dockerflow.args.WorkflowArgs;
 import com.google.cloud.genomics.dockerflow.task.TaskBuilder;
 import com.google.cloud.genomics.dockerflow.task.TaskDefn;
@@ -32,7 +30,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -76,32 +73,11 @@ public class WorkflowFactory implements DockerflowConstants {
     LOG.info("Load workflow: " + path);
 
     Workflow w = loadWorkflowDefn(path);
-
-    // Fill out missing stuff to avoid having to check null pointers
-    // everywhere
     TaskArgs a = w.getArgs();
-    if (a == null) {
-      a = ArgsBuilder.of(null).build();
-      w.setArgs(a);
-    }
-    if (a.getInputs() == null) {
-      a.setInputs(new LinkedHashMap<String, String>());
-    }
-    if (a.getOutputs() == null) {
-      a.setOutputs(new LinkedHashMap<String, String>());
-    }
-    if (a.getLogging() == null) {
-      a.setLogging(new Logging());
-    }
-    if (a.getResources() == null) {
-      a.setResources(new Resources());
-    }
-    if (a.getServiceAccount() == null) {
-      a.setServiceAccount(new ServiceAccount());
-    }
-
+    w.setArgs(new WorkflowArgs(a));
+    
     // Expand zone wildcards
-    if (a.getResources().getZones() != null) {
+    if (w.getArgs() != null && w.getArgs().getResources() != null && w.getArgs().getResources().getZones() != null) {
       String[] zones =
           a.getResources().getZones().toArray(new String[a.getResources().getZones().size()]);
       a.getResources().setZones(WorkflowFactory.expandZones(zones));
@@ -122,6 +98,7 @@ public class WorkflowFactory implements DockerflowConstants {
           defn.setName(step.getDefn().getName());
         }
         step.setDefn(defn);
+
       // Inject a workflow from file
       } else if (step.getWorkflowDefnFile() != null) {
         String wfile = FileUtils.resolve(step.getWorkflowDefnFile(), path);
@@ -232,7 +209,7 @@ public class WorkflowFactory implements DockerflowConstants {
     if (m.containsKey(LOGGING)) {
       b.logging(m.get(LOGGING));
     } else if (m.containsKey(WORKSPACE)) {
-      b.logging(m.get(WORKSPACE) + "/logs");
+      b.logging(m.get(WORKSPACE));
     }
     if (m.containsKey(PROJECT)) {
       b.project(m.get(PROJECT));

@@ -47,15 +47,12 @@ steps:
     - name: "output_bam"
       defaultValue: "${output_bam_basename}.bam"
       type: file
-    - name: "output_bam_index"
-      defaultValue: "${output_bam_basename}.bai"
-      type: file
-    - name: "output_bam_md5"
-      defaultValue: "${output_bam_basename}.bam.md5"
+    - name: "bwa_stderr_log"
+      defaultValue: "${output_bam_basename}.bwa.stderr.log"
       type: file
     resources:
-      minCpuCores: "16"
-      minRamGb: "14"
+      minimumCpuCores: "16"
+      minimumRamGb: "14"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -69,7 +66,7 @@ steps:
             FASTQ=/dev/stdout \
             INTERLEAVE=true \
             NON_PF=true | \
-          /usr/gitc/${bwa_commandline} ($ref_fasta} /dev/stdin -  2> >(tee ${bwa_stderr_log} >&2) | \
+          /usr/gitc/${bwa_commandline} ${ref_fasta} /dev/stdin -  2> >(tee ${bwa_stderr_log} >&2) | \
           samtools view -1 - > ${output_bam} && \
           grep -m1 "read .* ALT contigs" ${bwa_stderr_log} | \
           grep -v "read 0 ALT contigs"
@@ -106,7 +103,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam"
       type: file
     resources:
-      minRamGb: "3.5"
+      minimumRamGb: "3.5"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -169,7 +166,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "5"
+      minimumRamGb: "5"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -208,7 +205,7 @@ steps:
       defaultValue: "${metrics_filename}"
       type: file
     resources:
-      minRamGb: "7"
+      minimumRamGb: "7"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -252,7 +249,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "5"
+      minimumRamGb: "5"
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
       cmd: |
@@ -279,7 +276,7 @@ steps:
       defaultValue: "${ref_dict}"
       type: file
     resources:
-      minRamGb: "2"
+      minimumRamGb: "2"
       preemptible: true
     docker:
       imageName: "python:2.7"
@@ -357,7 +354,7 @@ steps:
       defaultValue: "${recalibration_report_filename}"
       type: file
     resources:
-      minRamGb: "6"
+      minimumRamGb: "6"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -372,7 +369,8 @@ steps:
           --useOriginalQualities \
           -O ${recalibration_report} \
           -knownSites ${dbSNP_vcf} \
-          -knownSites ${known_indels_sites_VCFs} \
+          -knownSites ${known_snps_sites_vcf} \
+          -knownSites ${known_indels_sites_vcf} \
           -L ${sequence_group_interval}
   scatterBy: "sequence_group_interval"
   args:
@@ -413,7 +411,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "3.5"
+      minimumRamGb: "3.5"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -449,14 +447,14 @@ steps:
       defaultValue: "${output_report_filename}"
       type: file
     resources:
-      minRamGb: "3.5"
+      minimumRamGb: "3.5"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
       cmd: |
         java -Xmx3000m -jar /usr/gitc/GATK4.jar \
           GatherBQSRReports \
-          -I ${sep=' -I ' input_bqsr_reports} \
+          -I ${input_bqsr_reports} \
           -O ${output_bqsr_report}
 
 # Apply Base Quality Score Recalibration (BQSR) model
@@ -483,8 +481,6 @@ steps:
     - name: "ref_fasta_index"
       defaultValue: "${ref_fasta_index}"
       type: file
-    - name: "pipeline_run"
-      defaultValue: "${workflow.index}"
     outputParameters:
     - name: "recalibrated_bam"
       defaultValue: "${output_bam_basename}.bam"
@@ -493,7 +489,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "3.5"
+      minimumRamGb: "3.5"
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
       cmd: |
@@ -507,12 +503,11 @@ steps:
           -R ${ref_fasta} \
           -I ${input_bam} \
           --useOriginalQualities \
-          -O ${output_bam} \
+          -O ${recalibrated_bam} \
           -bqsr ${recalibration_report} \
           -SQQ 10 -SQQ 20 -SQQ 30 -SQQ 40 \
           --emit_original_quals \
           -L ${sequence_group_interval}
-  gatherBy: "pipeline_run"
 
 # Combine multiple recalibrated BAM files from scattered ApplyRecalibration runs
 - defn:
@@ -536,7 +531,7 @@ steps:
       defaultValue: "${output_bam_basename}.bam.md5"
       type: file
     resources:
-      minRamGb: "3"
+      minimumRamGb: "3"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -570,7 +565,7 @@ steps:
       defaultValue: "${output_bam_basename}.crai"
       type: file
     resources:
-      minRamGb: "3"
+      minimumRamGb: "3"
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
       cmd: |
@@ -614,7 +609,7 @@ steps:
       defaultValue: "${gvcf_basename}.vcf.gz.tbi"
       type: file
     resources:
-      minRamGb: "10"
+      minimumRamGb: "10"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -656,7 +651,7 @@ steps:
       defaultValue: "${output_vcf_name}.tbi"
       type: file
     resources:
-      minRamGb: "3"
+      minimumRamGb: "3"
       preemptible: true
     docker:
       imageName: "broadinstitute/genomes-in-the-cloud:2.2.3-1469027018"
@@ -673,7 +668,7 @@ args:
 
     SamToFastqAndBwaMem.input_bam: "${flowcell_unmapped_bams}"
     SamToFastqAndBwaMem.output_bam_basename: "${= '${input_bam}'.replace(/gs:.*\\//, '').replace(/.bam/, '.unmerged'); }"
-    SamToFastqAndBwaMem.task.diskSize: "${flowcell_small_disk}"
+    SamToFastqAndBwaMem.task.diskSize: "${flowcell_medium_disk}"
 
     MergeBamAlignment.unmapped_bam: "${SamToFastqAndBwaMem.input_bam}"
     MergeBamAlignment.bwa_version: "${BwaVersion.task.stdout}"
@@ -697,7 +692,7 @@ args:
     BaseRecalibrator.input_bam: "${SortAndFixSampleBam.output_bam}"
     BaseRecalibrator.input_bam_index: "${SortAndFixSampleBam.output_bam_index}"
     BaseRecalibrator.recalibration_report_filename: "${sample_name}.recal_data.csv"
-    BaseRecalibrator.sequence_group_interval: "${CreateSequenceGroupingTSV.sequence_grouping}"
+    BaseRecalibrator.sequence_group_interval: "${CreateSequenceGroupingTSV.task.stdout}"
     BaseRecalibrator.task.diskSize: "${agg_small_disk}"
 
     ApplyBQSR.input_bam: "${SortAndFixSampleBam.output_bam}"

@@ -56,10 +56,7 @@ public class Dockerflow implements DockerflowConstants {
     // Show help and exit
     if (m.isEmpty() || m.containsKey(HELP)) {
       System.out.println(
-          "USAGE: java "
-              + Dockerflow.class.getName()
-              + " [options]\n\n"
-              + "Description:\n"
+          "Description:\n"
               + "  Run a workflow of Docker tasks defined in Java or yaml/json, using Dataflow "
               + "for orchestration.\n\n"
               + "COMMON OPTIONS:\n"
