@@ -59,7 +59,7 @@ public interface DockerflowConstants {
   String GLOBALS = "globals";
   String HELP = "help";
   String INPUTS = "inputs";
-  String INPUTS_FROM_FILE = "inputs-fron-file";
+  String INPUTS_FROM_FILE = "inputs-from-file";
   String KEEP_ALIVE = "keep-alive";
   String LOGGING = "logging";
   String MACHINE_TYPE = "machine-type";
