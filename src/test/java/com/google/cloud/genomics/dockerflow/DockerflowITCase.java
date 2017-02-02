@@ -99,4 +99,10 @@ public class DockerflowITCase extends DockerflowTest {
   public void testComplexGraph() throws Exception {
     super.testComplexGraph();
   }
+
+  @Test
+  @Override
+  public void testFolderCopy() throws Exception {
+    super.testFolderCopy();
+  }
 }

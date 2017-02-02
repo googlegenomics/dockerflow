@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -259,6 +260,8 @@ public class Task implements Serializable, GraphItem {
 
       // For CWL stuff
       applyInputBindings();
+      
+      resolveFolders();
     }
   }
 
@@ -360,7 +363,7 @@ public class Task implements Serializable, GraphItem {
     for (Param p : new ArrayList<Param>(defn.getParams())) {
       String val = args.get(p.getName()) == null ? p.getDefaultValue() : args.get(p.getName());
 
-      if (val != null && p.isFile()) {
+      if (val != null && (p.isFile() || p.isFolder())) {
 
         if (p.getLocalCopy() == null) {
           p.setLocalCopy(new LocalCopy());
@@ -380,6 +383,89 @@ public class Task implements Serializable, GraphItem {
               p.getLocalCopy().getPath() + " by workflow author"); 
         }
       }
+    }
+  }
+
+  /**
+   * For parameters that are folders, convert to environment variables 
+   * with locally resolved paths and edit the Docker command to do a
+   * recursive copy of inputs and outputs.
+   */
+  private void resolveFolders() {
+    LOG.debug("Resolving folders for recursive copy");
+    
+    // Distinguish between inputs and outputs
+    Set<String> inputs = new HashSet<String>();
+    if (defn.getInputParameters() != null) {
+      for (Param p : defn.getInputParameters()) {
+        inputs.add(p.getName());
+      }
+    }
+    
+    Map<String,String> gcsPaths = new LinkedHashMap<String,String>();
+    Map<String,String> localPaths = new LinkedHashMap<String,String>();
+    
+    // Loop through a copy to avoid concurrent modification
+    for (Param p : new ArrayList<Param>(defn.getParams())) {
+      String val = args.get(p.getName()) == null ? p.getDefaultValue() : args.get(p.getName());
+
+      // Folder copying is done by editing the Docker command, 
+      // not by automated file staging
+      if (val != null && p.isFolder()) {
+        gcsPaths.put(p.getName(), val);
+        localPaths.put(p.getName(), p.getLocalCopy().getPath());
+
+        // turn it into an env var
+        p.setLocalCopy(null);
+        p.setType(null);
+      }
+    }
+    
+    // Edit the Docker command to copy the folders
+    StringBuilder copyInputs = new StringBuilder();
+    StringBuilder copyOutputs = new StringBuilder();
+    
+    for (String name : gcsPaths.keySet()) {
+      // copy input folder
+      if (inputs.contains(name)) {
+        copyInputs.append(
+            "mkdir -p " + 
+                localPaths.get(name) 
+                + " \\\n" +
+            "for ((i = 0; i < 3; i++)); do\\\n" +
+            "  if gsutil -m rsync -r "  + 
+                gcsPaths.get(name) + 
+                " " + 
+                localPaths.get(name) +
+                " ; then\\\n" +
+            "    break\\\n" +
+            "  elif ((i == 2)); then\\\n" +
+            "    2>&1 echo \"Recursive localization failed.\"\\\n" +
+            "    exit 1\\\n" +
+            "  fi\\\n" +
+            "done\\\n\\\n");
+      // copy output folder
+      } else {
+        copyOutputs.append(
+            "for ((i = 0; i < 3; i++)); do\\\n" +
+            "  if gsutil -m rsync -r "  + 
+                localPaths.get(name) + 
+                " " +
+                gcsPaths.get(name) + 
+                " ; then\\\n" +
+            "    break\\\n" +
+            "  elif ((i == 2)); then\\\n" +
+            "    2>&1 echo \"Recursive delocalization failed.\"\\\n" +
+            "    exit 1\\\n" +
+            "  fi\\\n" +
+            "done\\\n\\\n");
+      }
+    }
+    if (!gcsPaths.isEmpty()) {
+      defn.getDocker().setCmd(
+          copyInputs.toString() + 
+          defn.getDocker().getCmd() + 
+          copyOutputs.toString());
     }
   }
 
@@ -408,8 +494,8 @@ public class Task implements Serializable, GraphItem {
 
     LOG.info("Resolving paths vs " + parentPath);
     for (Param p : defn.getParams()) {
-      LOG.debug(p.getName() + " is a file? " + p.isFile());
-      if (!p.isFile()) {
+      LOG.debug(p.getName() + " is a file? " + p.isFile() + " is folder? " + p.isFolder());
+      if (!p.isFile() && !p.isFolder()) {
         continue;
       }
 

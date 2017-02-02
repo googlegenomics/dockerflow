@@ -264,6 +264,27 @@ public class DockerflowTest implements DockerflowConstants {
       LOG.info("\"" + output);
     }
   }
+  
+  @Test
+  public void testFolderCopy() throws Exception {
+    Dockerflow.main(
+        new String[] {
+            "--" + PROJECT + "=" + TestUtils.TEST_PROJECT,
+            "--" + WORKFLOW_FILE + "=" + utils.baseDir + "/folder-copy.yaml",
+            "--" + STAGING + "=" + utils.baseDir + "/dataflow",
+            "--" + LOGGING + "=" + utils.baseDir + "/folder-copy",
+            "--" + TEST + "=" + DockerflowConstants.DIRECT_RUNNER.equals(utils.runner),
+            "--" + INPUTS + "=stepOne.inputFolder=" + utils.baseDir + "/test-folder",
+            "--" + OUTPUTS + "=stepOne.outputFolder=" + utils.baseDir + "/test-output",
+            "--" + RUNNER + "=" + utils.runner
+        });
+    if (utils.checkOutput) {
+      String output = TestUtils.readAll(utils.baseDir + "/folder-copy/stepOne/test-output/file1.txt");
+      LOG.info("\"" + output);
+      
+      assertEquals("Folder copy failed", TestUtils.OUTPUT_ONE);
+    }
+  }
 
   @Test
   public void testFileParsing() throws Exception {
