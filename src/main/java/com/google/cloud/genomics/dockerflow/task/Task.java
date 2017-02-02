@@ -33,6 +33,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -415,10 +416,34 @@ public class Task implements Serializable, GraphItem {
         gcsPaths.put(p.getName(), val);
         localPaths.put(p.getName(), p.getLocalCopy().getPath());
 
-        // turn it into an env var
+        // Turn it into an env var
         p.setLocalCopy(null);
         p.setType(null);
+        
+        // Move output folders to input parameters
+        // because outputs can only be files
+        if (!inputs.contains(p.getName())) {
+          defn.getOutputParameters().remove(p);
+          if (defn.getInputParameters() == null) {
+            defn.setInputParameters(new LinkedHashSet<Param>());
+          }
+          defn.getInputParameters().add(p);
+          
+          // move output folder args to input args
+          if (args.getOutputs() != null && args.getOutputs().containsKey(p.getName())) {
+            if (args.getInputs() == null) {
+              args.setInputs(new LinkedHashMap<String,String>());
+            }
+            args.getInputs().put(p.getName(), args.getOutputs().get(p.getName()));
+            args.getOutputs().remove(p.getName());
+          }
+        }
       }
+    }
+    
+    // Pipelines API chokes on empty output parameter set
+    if (defn.getOutputParameters() != null && defn.getOutputParameters().isEmpty()) {
+      defn.setOutputParameters(null);
     }
     
     // Edit the Docker command to copy the folders
@@ -426,45 +451,69 @@ public class Task implements Serializable, GraphItem {
     StringBuilder copyOutputs = new StringBuilder();
     
     for (String name : gcsPaths.keySet()) {
-      // copy input folder
+      // Copy input folder
       if (inputs.contains(name)) {
         copyInputs.append(
-            "mkdir -p " + 
+            "mkdir -p " +
+                DockerflowConstants.DEFAULT_MOUNT_POINT  + 
+                "/" +
                 localPaths.get(name) 
-                + " \\\n" +
-            "for ((i = 0; i < 3; i++)); do\\\n" +
+                + " \n" +
+            "for ((i = 0; i < 3; i++)); do\n" +
             "  if gsutil -m rsync -r "  + 
                 gcsPaths.get(name) + 
-                " " + 
+                "/ " +
+                DockerflowConstants.DEFAULT_MOUNT_POINT + 
+                "/" +
                 localPaths.get(name) +
-                " ; then\\\n" +
-            "    break\\\n" +
-            "  elif ((i == 2)); then\\\n" +
-            "    2>&1 echo \"Recursive localization failed.\"\\\n" +
-            "    exit 1\\\n" +
-            "  fi\\\n" +
-            "done\\\n\\\n");
-      // copy output folder
+                " ; then\n" +
+            "    break\n" +
+            "  elif ((i == 2)); then\n" +
+            "    2>&1 echo \"Recursive localization failed.\"\n" +
+            "    exit 1\n" +
+            "  fi\n" +
+            "done\n\n");
+      // Copy output folder
       } else {
         copyOutputs.append(
-            "for ((i = 0; i < 3; i++)); do\\\n" +
-            "  if gsutil -m rsync -r "  + 
+            "for ((i = 0; i < 3; i++)); do\n" +
+            "  if gsutil -m rsync -r " + 
+                DockerflowConstants.DEFAULT_MOUNT_POINT +
+                "/" +
                 localPaths.get(name) + 
-                " " +
+                "/ " +
                 gcsPaths.get(name) + 
-                " ; then\\\n" +
-            "    break\\\n" +
-            "  elif ((i == 2)); then\\\n" +
-            "    2>&1 echo \"Recursive delocalization failed.\"\\\n" +
-            "    exit 1\\\n" +
-            "  fi\\\n" +
-            "done\\\n\\\n");
+                " ; then\n" +
+            "    break\n" +
+            "  elif ((i == 2)); then\n" +
+            "    2>&1 echo \"Recursive delocalization failed.\"\n" +
+            "    exit 1\n" +
+            "  fi\n" +
+            "done\n\n");
       }
     }
     if (!gcsPaths.isEmpty()) {
       defn.getDocker().setCmd(
+          "\n" +
+          "# Install gsutil\n" +
+          "if ! type gsutil; then\n" +
+          "  apt-get update && apt-get --yes install gcc python-dev python-setuptools\n" +
+          "  easy_install -U pip\n" +
+          "  pip install -U crcmod\n" +
+          "\n" +
+          "  export CLOUD_SDK_REPO=\"cloud-sdk-$(lsb_release -c -s)\"\n" +
+          "  echo \"deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main\" >> /etc/apt/sources.list.d/google-cloud-sdk.list\n" +
+          "  apt-get update && apt-get --yes install curl\n" +
+          "  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -\n" +
+          "  apt-get update && apt-get --yes install google-cloud-sdk\n" +
+          "fi\n" +
+          "\n" +
+          "# Copy inputs\n" +
           copyInputs.toString() + 
+          "# Run user script\n" +
           defn.getDocker().getCmd() + 
+          "\n\n" +
+          "# Copy outputs\n" +
           copyOutputs.toString());
     }
   }

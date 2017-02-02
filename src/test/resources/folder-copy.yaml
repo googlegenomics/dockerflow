@@ -13,5 +13,5 @@ steps:
       type: folder
     resources:
     docker:
-      imageName: ubuntu
-      cmd: "mkdir -p ${outputFolder}; cp -rf ${inputFolder} ${outputFolder}"
+      imageName: ubuntu:16.04
+      cmd: "cp -rf ${inputFolder} ${outputFolder}"

@@ -276,7 +276,8 @@ public class DockerflowTest implements DockerflowConstants {
             "--" + TEST + "=" + DockerflowConstants.DIRECT_RUNNER.equals(utils.runner),
             "--" + INPUTS + "=stepOne.inputFolder=" + utils.baseDir + "/test-folder",
             "--" + OUTPUTS + "=stepOne.outputFolder=" + utils.baseDir + "/test-output",
-            "--" + RUNNER + "=" + utils.runner
+            "--" + RUNNER + "=" + utils.runner,
+            "--" + KEEP_ALIVE + "=600s"
         });
     if (utils.checkOutput) {
       String output = TestUtils.readAll(utils.baseDir + "/folder-copy/stepOne/test-output/file1.txt");
