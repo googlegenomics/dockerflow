@@ -1,0 +1,17 @@
+version: v1alpha2
+defn:
+  name: FolderCopy
+  description: Test copying input and output folders
+steps: 
+- defn:
+    name: stepOne
+    inputParameters:
+    - name: inputFolder
+      type: folder
+    outputParameters:
+    - name: outputFolder
+      type: folder
+    resources:
+    docker:
+      imageName: ubuntu
+      cmd: "mkdir -p ${outputFolder}; cp -rf ${inputFolder} ${outputFolder}"
