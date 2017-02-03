@@ -60,10 +60,11 @@ Workflow Language]
     (https://console.cloud.google.com/project?).
 2.  [Enable the APIs]
     (https://console.cloud.google.com/flows/enableapi?apiid=genomics,dataflow,storage_component,compute_component&redirect=https://console.cloud.google.com)
-    for Cloud Dataflow, Google Genomics, Compute Engine and Cloud Storage.\
+    for Cloud Dataflow, Google Genomics, Compute Engine and Cloud Storage.
 3.  [Install the Google Cloud SDK](https://cloud.google.com/sdk/) and run
 
         gcloud init
+        gcloud components update
 
 ## Getting started
 
