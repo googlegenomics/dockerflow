@@ -73,16 +73,22 @@ Workflow Language]
 
 Run the following steps on your laptop or local workstation:
 
-1.  git clone this repository.
+1. git clone this repository.
 
         git clone https://github.com/googlegenomics/dockerflow
 
-2.  Build it with Maven.
+2. Build it with Maven.
 
         cd dockerflow
         mvn package -DskipTests
 
-3.  Set up your local project environmental variables.
+3. Set up the DOCKERFLOW_HOME environment.
+
+        export DOCKERFLOW_HOME="$(pwd)"
+        export PATH="${PATH}":"${DOCKERFLOW_HOME}/bin"
+        chmod +x bin/*
+
+4. Set up your local project environmental variables.
 
         export PROJECT_NAME=$(gcloud config list project | grep = | cut -d ' ' -f 3)
         export WORKSPACE_BUCKET=gs://MY-BUCKET
@@ -93,11 +99,29 @@ Set `MY-BUCKET` and `MY-PATH` to your cloud bucket and folder.  A `gsutil mb` co
 is included above to ensure that bucket `MY-BUCKET` exists.  Subdirectory `MY-PATH`
 does not need to exist, as it will be created by running the workflow.
 
-4. Set up the DOCKERFLOW_HOME environment.
+5. Create a workflow
 
-        export DOCKERFLOW_HOME="$(pwd)"
-        export PATH="${PATH}":"${DOCKERFLOW_HOME}/bin"
-        chmod +x bin/*
+        echo "
+        version: v1alpha2
+        defn:
+          name: LinearGraph
+          description: A simple linear graph.
+        args:
+          inputs:
+            BASE_DIR: 
+            stepOne.inputFile: ${BASE_DIR}/input-one.txt
+            stepTwo.inputFile: ${stepOne.outputFile}
+          outputs:
+            stepOne.outputFile: output-one.txt
+            stepTwo.outputFile: output-two.txt
+        steps: 
+        - defn:
+            name: stepOne
+          defnFile: task-one.yaml
+        - defn:
+            name: stepTwo
+          defnFile: task-two.yaml
+        " > hello.yaml
 
 5.  Run a sample workflow:
 
@@ -106,7 +130,9 @@ does not need to exist, as it will be created by running the workflow.
             --workspace=$WORKSPACE_PATH \
             --runner=DirectPipelineRunner
 
-`$PROJECT_NAME` and `$WORKSPACE_PATH` are defined in step 3 above.
+`$PROJECT_NAME` and `$WORKSPACE_PATH` are defined in step 4 above.
+
+https://github.com/googlegenomics/dockerflow/blob/master/src/test/resources/linear-graph.yaml
 
 The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
 will block until the workflow completes. To run in your cloud project, you can
