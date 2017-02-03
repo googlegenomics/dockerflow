@@ -131,16 +131,30 @@ Run the following steps on your laptop or local workstation:
 
 6.  Run a sample workflow:
 
+    There are two ways to do this:
+
+    * Locally and blocking:
+
         dockerflow --project=$PROJECT_NAME \
             --workflow-file=./linear-graph.yaml \
             --workspace=$WORKSPACE_PATH \
             --runner=DirectPipelineRunner
 
-`$PROJECT_NAME` and `$WORKSPACE_PATH` are defined in step 4 above.
+      This will not return control to the shell until the job completes.
 
-The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
-will block until the workflow completes. To run in your cloud project, you can
-remove the `--runner` option to use the default Dataflow runner.
+
+    * Remotely and non-blocking, with visualization.
+
+        dockerflow --project=$PROJECT_NAME \
+            --workflow-file=./linear-graph.yaml \
+            --workspace=$WORKSPACE_PATH
+
+      Here we simply remove the parameter `--runner=DirectPipelineRunner`.  The effect
+      is that the workflow is launched and control is returned to the current shell.
+      With the non-blocking version, it's possible to [monitor and visualize Workflow progress](https://pantheon.corp.google.com/dataflow).
+
+
+    `$PROJECT_NAME` and `$WORKSPACE_PATH` are defined in step 4 above.
 
 ## Docker and Dataflow vs custom scripts
 
