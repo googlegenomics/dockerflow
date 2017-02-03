@@ -100,7 +100,7 @@ Set `MY-BUCKET` and `MY-PATH` to your cloud bucket and folder.
             --workspace=$WORKSPACE \
             --runner=DirectPipelineRunner
 
-`$PROJECT_NAME` and $WORKSPACE are defined in step 3 above.
+`$PROJECT_NAME` and `$WORKSPACE` are defined in step 3 above.
 
 The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
 will block until the workflow completes. To run in your cloud project, you can
