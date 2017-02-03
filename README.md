@@ -95,9 +95,9 @@ Run the following steps on your laptop or local workstation:
         gsutil mb $WORKSPACE_BUCKET
         export WORKSPACE_PATH=$WORKSPACE_BUCKET/MY-PATH
 
-Set `MY-BUCKET` and `MY-PATH` to your cloud bucket and folder.  A `gsutil mb` command
-is included above to ensure that bucket `MY-BUCKET` exists.  Subdirectory `MY-PATH`
-does not need to exist, as it will be created by running the workflow.
+   Set `MY-BUCKET` and `MY-PATH` to your cloud bucket and folder.  A `gsutil mb` command
+   is included above to ensure that bucket `MY-BUCKET` exists.  Subdirectory `MY-PATH`
+   does not need to exist, as it will be created by running the workflow.
 
 5. Create a workflow
 
