@@ -109,8 +109,8 @@ Run the following steps on your laptop or local workstation:
         args:
           inputs:
             BASE_DIR: $WORKSPACE_PATH
-            stepOne.inputFile: ${BASE_DIR}/input-one.txt
-            stepTwo.inputFile: ${stepOne.outputFile}
+            stepOne.inputFile: \${BASE_DIR}/input-one.txt
+            stepTwo.inputFile: \${stepOne.outputFile}
           outputs:
             stepOne.outputFile: output-one.txt
             stepTwo.outputFile: output-two.txt
