@@ -108,7 +108,7 @@ does not need to exist, as it will be created by running the workflow.
           description: A simple linear graph.
         args:
           inputs:
-            BASE_DIR: 
+            BASE_DIR: $WORKSPACE_PATH
             stepOne.inputFile: ${BASE_DIR}/input-one.txt
             stepTwo.inputFile: ${stepOne.outputFile}
           outputs:
@@ -121,18 +121,22 @@ does not need to exist, as it will be created by running the workflow.
         - defn:
             name: stepTwo
           defnFile: task-two.yaml
-        " > hello.yaml
+        " > ./linear-graph.yaml
 
-5.  Run a sample workflow:
+        echo "puppy dog" | gsutil cp - $WORKSPACE_PATH/input-one.txt
+
+The commands above
+  * Create a new file in the current working directory called `linear-graph.yaml`.  It's based on the dockerflow unit test yaml file [here](https://github.com/allenday/dockerflow/blob/master/src/test/resources/linear-graph.yaml).
+  * Create an input file for the workflow.  Contents are `puppy dog`.
+
+6.  Run a sample workflow:
 
         dockerflow --project=$PROJECT_NAME \
-            --workflow-file=src/test/resources/linear-graph.yaml \
+            --workflow-file=./linear-graph.yaml \
             --workspace=$WORKSPACE_PATH \
             --runner=DirectPipelineRunner
 
 `$PROJECT_NAME` and `$WORKSPACE_PATH` are defined in step 4 above.
-
-https://github.com/googlegenomics/dockerflow/blob/master/src/test/resources/linear-graph.yaml
 
 The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
 will block until the workflow completes. To run in your cloud project, you can
