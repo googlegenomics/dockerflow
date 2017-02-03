@@ -73,33 +73,33 @@ Workflow Language]
 
 Run the following steps on your laptop or local workstation:
 
-1. git clone this repository.
+1.  git clone this repository.
 
         git clone https://github.com/googlegenomics/dockerflow
 
-2. Build it with Maven.
+2.  Build it with Maven.
 
         cd dockerflow
         mvn package -DskipTests
 
-3. Set up the DOCKERFLOW_HOME environment.
+3.  Set up the DOCKERFLOW_HOME environment.
 
         export DOCKERFLOW_HOME="$(pwd)"
         export PATH="${PATH}":"${DOCKERFLOW_HOME}/bin"
         chmod +x bin/*
 
-4. Set up your local project environmental variables.
+4.  Set up your local project environmental variables.
 
         export PROJECT_NAME=$(gcloud config list project | grep = | cut -d ' ' -f 3)
         export WORKSPACE_BUCKET=gs://MY-BUCKET
         gsutil mb $WORKSPACE_BUCKET
         export WORKSPACE_PATH=$WORKSPACE_BUCKET/MY-PATH
 
-   Set `MY-BUCKET` and `MY-PATH` to your cloud bucket and folder.  A `gsutil mb` command
-   is included above to ensure that bucket `MY-BUCKET` exists.  Subdirectory `MY-PATH`
-   does not need to exist, as it will be created by running the workflow.
+    Set `MY-BUCKET` and `MY-PATH` to your cloud bucket and folder.  A `gsutil mb` command
+    is included above to ensure that bucket `MY-BUCKET` exists.  Subdirectory `MY-PATH`
+    does not need to exist, as it will be created by running the workflow.
 
-5. Create a workflow
+5.  Create a workflow
 
         echo "
         version: v1alpha2
@@ -125,9 +125,9 @@ Run the following steps on your laptop or local workstation:
 
         echo "puppy dog" | gsutil cp - $WORKSPACE_PATH/input-one.txt
 
-The commands above
-  * Create a new file in the current working directory called `linear-graph.yaml`.  It's based on the dockerflow unit test yaml file [here](https://github.com/allenday/dockerflow/blob/master/src/test/resources/linear-graph.yaml).  Note that it references two additional yaml files for steps `stepOne` and `stepTwo`.
-  * Create an input file for the workflow.  Contents are `puppy dog`.
+    The commands above
+    * Create a new file in the current working directory called `linear-graph.yaml`.  It's based on the dockerflow unit test yaml file [here](https://github.com/allenday/dockerflow/blob/master/src/test/resources/linear-graph.yaml).  Note that it references two additional yaml files for steps `stepOne` and `stepTwo`.
+    * Create an input file for the workflow.  Contents are `puppy dog`.
 
 6.  Run a sample workflow:
 
