@@ -59,8 +59,6 @@ Workflow Language]
 1.  Sign up for a Google Cloud Platform account and [create a project]
     (https://console.cloud.google.com/project?).
 
-        export PROJECT_NAME=$(gcloud config list project | grep = | cut -d ' ' -f 3)
-
 2.  [Enable the APIs]
     (https://console.cloud.google.com/flows/enableapi?apiid=genomics,dataflow,storage_component,compute_component&redirect=https://console.cloud.google.com)
     for Cloud Dataflow, Google Genomics, Compute Engine and Cloud Storage.
@@ -82,21 +80,27 @@ Run the following steps on your laptop or local workstation:
         cd dockerflow
         mvn package -DskipTests
 
-3. Set up the DOCKERFLOW_HOME environment.
+3.  Set up your local project environmental variables.
+
+        export PROJECT_NAME=$(gcloud config list project | grep = | cut -d ' ' -f 3)
+        export WORKSPACE=gs://MY-BUCKET/MY-PATH
+
+Set `MY-BUCKET` and `MY-PATH` to your cloud bucket and folder.
+
+4. Set up the DOCKERFLOW_HOME environment.
 
         export DOCKERFLOW_HOME="$(pwd)"
         export PATH="${PATH}":"${DOCKERFLOW_HOME}/bin"
         chmod +x bin/*
 
-4.  Run a sample workflow:
+5.  Run a sample workflow:
 
         dockerflow --project=$PROJECT_NAME \
             --workflow-file=src/test/resources/linear-graph.yaml \
-            --workspace=gs://MY-BUCKET/MY-PATH \
+            --workspace=$WORKSPACE \
             --runner=DirectPipelineRunner
 
-`$PROJECT_NAME` is defined in step 1 above.  Set `MY-BUCKET` and `MY-PATH`
-to your cloud bucket and folder.
+`$PROJECT_NAME` and $WORKSPACE are defined in step 3 above.
 
 The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
 will block until the workflow completes. To run in your cloud project, you can
@@ -244,7 +248,7 @@ them in from a file, using the `--inputs-from-file` option.
     dockerflow \
         --project=$PROJECT_NAME \
         --workflow-file=src/test/resources/parallel-graph.yaml \
-        --workspace=gs://MY-BUCKET/MY-PATH \
+        --workspace=$WORKSPACE \
         --inputs-from-file=parallelTask.inputFile=many_files.txt
 
 The file `many_files.txt` can contain many file paths. All will run, with
@@ -339,7 +343,7 @@ Finally, you can set parameters from the command-line:
 
     dockerflow --project=$PROJECT_NAME \
         --workflow-file=src/test/resources/parallel-graph.yaml \
-        --workspace=gs://MY-BUCKET/MY-PATH \
+        --workspace=$WORKSPACE \
         --outputs=stepOne.outputFile=output-one.txt,\
             stepTwo.outputFile=output-two.txt \
         --inputs=stepTwo.inputFile=output-one.txt
