@@ -117,16 +117,16 @@ Run the following steps on your laptop or local workstation:
         steps: 
         - defn:
             name: stepOne
-          defnFile: task-one.yaml
+          defnFile: $DOCKERFLOW_HOME/src/test/resources/task-one.yaml
         - defn:
             name: stepTwo
-          defnFile: task-two.yaml
+          defnFile: $DOCKERFLOW_HOME/src/test/resources/task-two.yaml
         " > ./linear-graph.yaml
 
         echo "puppy dog" | gsutil cp - $WORKSPACE_PATH/input-one.txt
 
 The commands above
-  * Create a new file in the current working directory called `linear-graph.yaml`.  It's based on the dockerflow unit test yaml file [here](https://github.com/allenday/dockerflow/blob/master/src/test/resources/linear-graph.yaml).
+  * Create a new file in the current working directory called `linear-graph.yaml`.  It's based on the dockerflow unit test yaml file [here](https://github.com/allenday/dockerflow/blob/master/src/test/resources/linear-graph.yaml).  Note that it references two additional yaml files for steps `stepOne` and `stepTwo`.
   * Create an input file for the workflow.  Contents are `puppy dog`.
 
 6.  Run a sample workflow:
