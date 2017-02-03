@@ -58,6 +58,9 @@ Workflow Language]
 
 1.  Sign up for a Google Cloud Platform account and [create a project]
     (https://console.cloud.google.com/project?).
+
+        export PROJECT_NAME=$(gcloud config list project | grep = | cut -d ' ' -f 3)
+
 2.  [Enable the APIs]
     (https://console.cloud.google.com/flows/enableapi?apiid=genomics,dataflow,storage_component,compute_component&redirect=https://console.cloud.google.com)
     for Cloud Dataflow, Google Genomics, Compute Engine and Cloud Storage.
@@ -87,12 +90,12 @@ Run the following steps on your laptop or local workstation:
 
 4.  Run a sample workflow:
 
-        dockerflow --project=MY-PROJECT \
+        dockerflow --project=$PROJECT_NAME \
             --workflow-file=src/test/resources/linear-graph.yaml \
             --workspace=gs://MY-BUCKET/MY-PATH \
             --runner=DirectPipelineRunner
 
-Set `MY-PROJECT` to your cloud project name, and set `MY-BUCKET` and `MY-PATH`
+`$PROJECT_NAME` is defined in step 1 above.  Set `MY-BUCKET` and `MY-PATH`
 to your cloud bucket and folder.
 
 The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
@@ -239,7 +242,7 @@ If you have a large number of values you'd like to run at once, you can pass
 them in from a file, using the `--inputs-from-file` option.
 
     dockerflow \
-        --project=MY_PROJECT \
+        --project=$PROJECT_NAME \
         --workflow-file=src/test/resources/parallel-graph.yaml \
         --workspace=gs://MY-BUCKET/MY-PATH \
         --inputs-from-file=parallelTask.inputFile=many_files.txt
@@ -334,7 +337,7 @@ task names in the included files will be used.
 
 Finally, you can set parameters from the command-line:
 
-    dockerflow --project=MY_PROJECT \
+    dockerflow --project=$PROJECT_NAME \
         --workflow-file=src/test/resources/parallel-graph.yaml \
         --workspace=gs://MY-BUCKET/MY-PATH \
         --outputs=stepOne.outputFile=output-one.txt,\
