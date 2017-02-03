@@ -135,19 +135,23 @@ Run the following steps on your laptop or local workstation:
 
     * Locally and blocking:
 
-        dockerflow --project=$PROJECT_NAME \
-            --workflow-file=./linear-graph.yaml \
-            --workspace=$WORKSPACE_PATH \
-            --runner=DirectPipelineRunner
+      ```
+      dockerflow --project=$PROJECT_NAME \
+        --workflow-file=./linear-graph.yaml \
+        --workspace=$WORKSPACE_PATH \
+        --runner=DirectPipelineRunner
+      ```
 
       This will not return control to the shell until the job completes.
 
 
     * Remotely and non-blocking, with visualization.
 
-        dockerflow --project=$PROJECT_NAME \
-            --workflow-file=./linear-graph.yaml \
-            --workspace=$WORKSPACE_PATH
+      ```
+      dockerflow --project=$PROJECT_NAME \
+        --workflow-file=./linear-graph.yaml \
+        --workspace=$WORKSPACE_PATH
+      ```
 
       Here we simply remove the parameter `--runner=DirectPipelineRunner`.  The effect
       is that the workflow is launched and control is returned to the current shell.
