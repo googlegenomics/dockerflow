@@ -32,10 +32,10 @@ public class TestUtils {
   // Environment variables
   public static final String TEST_PROJECT = System.getenv("TEST_PROJECT");
   public static final String TEST_GCS_PATH = System.getenv("TEST_GCS_PATH");
-  public static final String RESOURCE_DIR = 
-      System.getProperty("user.dir") + 
-      System.getProperty("file.separator") + 
-      "src/test/resources";
+  public static final String RESOURCE_DIR = "src/test/resources";
+//      System.getProperty("user.dir") + 
+//      System.getProperty("file.separator") + 
+//      "src/test/resources";
 
   public String baseDir = RESOURCE_DIR; // Allow local or GCS paths
   public String runner = DockerflowConstants.DIRECT_RUNNER;
