@@ -420,7 +420,7 @@ public class Task implements Serializable, GraphItem {
         defn.getDocker().setCmd(
             defn.getDocker().getCmd().replace(
                 "${" + p.getName() + "}", 
-                "\"" + DockerflowConstants.DEFAULT_MOUNT_POINT + "/" + 
+                DockerflowConstants.DEFAULT_MOUNT_POINT + 
                 p.getLocalCopy().getPath() + "\""));
 
         // Turn it into an env var
