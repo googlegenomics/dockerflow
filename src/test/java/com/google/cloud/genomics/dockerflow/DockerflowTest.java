@@ -271,19 +271,18 @@ public class DockerflowTest implements DockerflowConstants {
         new String[] {
             "--" + PROJECT + "=" + TestUtils.TEST_PROJECT,
             "--" + WORKFLOW_FILE + "=" + utils.baseDir + "/folder-copy.yaml",
-            "--" + STAGING + "=" + utils.baseDir + "/dataflow",
-            "--" + LOGGING + "=" + utils.baseDir + "/folder-copy",
+            "--" + WORKSPACE + "=" + utils.baseDir + "/folder-copy",
             "--" + TEST + "=" + DockerflowConstants.DIRECT_RUNNER.equals(utils.runner),
-            "--" + INPUTS + "=stepOne.inputFolder=" + utils.baseDir + "/test-folder",
-            "--" + OUTPUTS + "=stepOne.outputFolder=" + utils.baseDir + "/test-output",
-            "--" + RUNNER + "=" + utils.runner,
-            "--" + KEEP_ALIVE + "=600s"
+            "--" + INPUTS + "=stepOne.inputFolder=../../test-folder",
+            "--" + OUTPUTS + "=stepOne.outputFolder=test-output",
+            "--" + STAGING + "=" + utils.baseDir + "/dataflow",
+            "--" + RUNNER + "=" + utils.runner
         });
     if (utils.checkOutput) {
       String output = TestUtils.readAll(utils.baseDir + "/folder-copy/stepOne/test-output/file1.txt");
-      LOG.info("\"" + output);
+      LOG.info("\"" + output + "\"");
       
-      assertEquals("Folder copy failed", TestUtils.OUTPUT_ONE);
+      assertEquals("Folder copy failed", TestUtils.OUTPUT_ONE, output);
     }
   }
 
@@ -299,6 +298,6 @@ public class DockerflowTest implements DockerflowConstants {
     Map<String, String> m = StringUtils.parseParameters("foo[\" sep=val \"]=bar", false);
     
     assertEquals("Wrong number of keys", 1, m.size());
-    assertEquals("Array key parsed incorrectly", "foo[\" sep-val \"]", m.keySet().iterator().next());
+    assertEquals("Array key parsed incorrectly", "foo[\" sep=val \"]", m.keySet().iterator().next());
   }
 }

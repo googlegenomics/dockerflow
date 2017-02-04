@@ -415,11 +415,18 @@ public class Task implements Serializable, GraphItem {
       if (val != null && p.isFolder()) {
         gcsPaths.put(p.getName(), val);
         localPaths.put(p.getName(), p.getLocalCopy().getPath());
+        
+        // Replace var in user script with local path
+        defn.getDocker().setCmd(
+            defn.getDocker().getCmd().replace(
+                "${" + p.getName() + "}", 
+                "\"" + DockerflowConstants.DEFAULT_MOUNT_POINT + "/" + 
+                p.getLocalCopy().getPath() + "\""));
 
         // Turn it into an env var
         p.setLocalCopy(null);
         p.setType(null);
-        
+                
         // Move output folders to input parameters
         // because outputs can only be files
         if (!inputs.contains(p.getName())) {
@@ -466,7 +473,7 @@ public class Task implements Serializable, GraphItem {
                 DockerflowConstants.DEFAULT_MOUNT_POINT + 
                 "/" +
                 localPaths.get(name) +
-                " ; then\n" +
+                "/ ; then\n" +
             "    break\n" +
             "  elif ((i == 2)); then\n" +
             "    2>&1 echo \"Recursive localization failed.\"\n" +
@@ -483,7 +490,7 @@ public class Task implements Serializable, GraphItem {
                 localPaths.get(name) + 
                 "/ " +
                 gcsPaths.get(name) + 
-                " ; then\n" +
+                "/ ; then\n" +
             "    break\n" +
             "  elif ((i == 2)); then\n" +
             "    2>&1 echo \"Recursive delocalization failed.\"\n" +
@@ -497,10 +504,12 @@ public class Task implements Serializable, GraphItem {
           "\n" +
           "# Install gsutil\n" +
           "if ! type gsutil; then\n" +
-          "  apt-get update && apt-get --yes install gcc python-dev python-setuptools\n" +
+          "  apt-get update\n" +
+          "  apt-get --yes install apt-utils gcc python-dev python-setuptools ca-certificates\n" +
           "  easy_install -U pip\n" +
           "  pip install -U crcmod\n" +
           "\n" +
+          "  apt-get --yes install lsb-release\n" +
           "  export CLOUD_SDK_REPO=\"cloud-sdk-$(lsb_release -c -s)\"\n" +
           "  echo \"deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main\" >> /etc/apt/sources.list.d/google-cloud-sdk.list\n" +
           "  apt-get update && apt-get --yes install curl\n" +
