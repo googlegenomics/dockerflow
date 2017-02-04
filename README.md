@@ -155,7 +155,7 @@ Run the following steps on your laptop or local workstation:
 
       Here we simply remove the parameter `--runner=DirectPipelineRunner`.  The effect
       is that the workflow is launched and control is returned to the current shell.
-      With the non-blocking version, it's possible to [monitor and visualize Workflow progress](https://pantheon.corp.google.com/dataflow).
+      With the non-blocking version, it's possible to [monitor and visualize Workflow progress](https://console.cloud.google.com/dataflow).
 
 
     `$PROJECT_NAME` and `$WORKSPACE_PATH` are defined in step 4 above.
