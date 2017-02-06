@@ -23,7 +23,7 @@ import com.google.cloud.genomics.dockerflow.util.StringUtils;
 import com.google.cloud.genomics.dockerflow.workflow.Workflow;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.csv.CSVFormat;
@@ -42,7 +42,7 @@ public class ArgsTableBuilder implements DockerflowConstants {
 
   public static ArgsTableBuilder named(String name) {
     ArgsTableBuilder b = new ArgsTableBuilder();
-    b.table = new HashMap<String, WorkflowArgs>();
+    b.table = new LinkedHashMap<String, WorkflowArgs>();
     b.table.put(name, new WorkflowArgs());
     return b;
   }
@@ -53,7 +53,7 @@ public class ArgsTableBuilder implements DockerflowConstants {
 
   public static ArgsTableBuilder of(WorkflowArgs args) {
     ArgsTableBuilder b = new ArgsTableBuilder();
-    b.table = new HashMap<String, WorkflowArgs>();
+    b.table = new LinkedHashMap<String, WorkflowArgs>();
     b.table.put("args", new WorkflowArgs(args));
     return b;
   }
@@ -100,7 +100,7 @@ public class ArgsTableBuilder implements DockerflowConstants {
     // Parse from yaml/json
     } else {
       WorkflowArgs wa = FileUtils.parseFile(file, WorkflowArgs.class);
-      b.table = new HashMap<String, WorkflowArgs>();
+      b.table = new LinkedHashMap<String, WorkflowArgs>();
       b.table.put(file, wa);
     }
     return b;
@@ -125,7 +125,7 @@ public class ArgsTableBuilder implements DockerflowConstants {
    * @throws IOException
    */
   static Map<String, WorkflowArgs> loadCsv(String csvFile) throws IOException {
-    Map<String, WorkflowArgs> retval = new HashMap<String, WorkflowArgs>();
+    Map<String, WorkflowArgs> retval = new LinkedHashMap<String, WorkflowArgs>();
 
     String csv = FileUtils.readAll(csvFile);
     CSVParser parser = CSVParser.parse(csv, CSVFormat.RFC4180);
@@ -196,7 +196,7 @@ public class ArgsTableBuilder implements DockerflowConstants {
    * @param globals
    */
   public ArgsTableBuilder global(String key, String value) {
-    Map<String, String> globals = new HashMap<String, String>();
+    Map<String, String> globals = new LinkedHashMap<String, String>();
     globals.put(key, value);
 
     for (WorkflowArgs a : table.values()) {

@@ -17,6 +17,7 @@ package com.google.cloud.genomics.dockerflow.util;
 
 import com.fasterxml.jackson.dataformat.yaml.snakeyaml.Yaml;
 import com.google.api.client.googleapis.util.Utils;
+import com.google.cloud.genomics.dockerflow.DockerflowConstants;
 import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,8 +31,8 @@ import javax.script.ScriptException;
 public class StringUtils {
 
   /**
-   * Parse command-line options of the form --key=value into a map of <key,value>. For --key without
-   * a value, set the value to true.
+   * Parse command-line options of the form --key=value into a map of <key,value>.
+   * For --key without a value, set the value to true.
    *
    * @param args
    * @return
@@ -45,6 +46,9 @@ public class StringUtils {
         } else {
           String key = s.substring(0, s.indexOf("=")).replace("--", "");
           String val = s.substring(s.indexOf("=") + 1);
+          if (m.containsKey(key)) {
+            val = m.get(key) + "," + val;
+          }
           m.put(key, val);
         }
       }
@@ -111,18 +115,24 @@ public class StringUtils {
       throws IOException {
     Map<String, String> map = new HashMap<String, String>();
 
-    String[] pairs = params.split(",");
+    String[] tokens = params.split(",");
 
-    for (String pair : pairs) {
-      String[] keyValue = pair.split("=");
-      if (keyValue.length != 2) {
-        throw new IllegalArgumentException("Invalid parameter: " + pair);
+    for (String token : tokens) {
+      if (token.contains("=")) {
+        String key = token.substring(0, token.lastIndexOf("="));
+        String value = token.substring(token.lastIndexOf("=") + 1);
+
+        // Load local files now; variables and GCS files will be loaded lazily
+        if (fromFile 
+            && value.indexOf("${") < 0 
+            && !value.startsWith("gs://") 
+            && !DockerflowConstants.REQUIRED.equals(value)) {
+          value = FileUtils.readAll(value);
+        }
+        map.put(key, value);
+      } else {
+        map.put(token, Boolean.TRUE.toString());
       }
-      String value = keyValue[1];
-      if (fromFile) {
-        value = FileUtils.readAll(value);
-      }
-      map.put(keyValue[0], value);
     }
     return map;
   }
@@ -146,7 +156,7 @@ public class StringUtils {
     if (start > 3) {
       sb.append(s.substring(0, start - 3));
     }
-    int end = s.indexOf("}", start);
+    int end = s.lastIndexOf("}");
     FileUtils.LOG.debug("start=" + start + ", end=" + end);
 
     String js = s.substring(start, end);

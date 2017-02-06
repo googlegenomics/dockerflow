@@ -111,15 +111,15 @@ public class ArgsBuilder {
     return this;
   }
 
-  public ArgsBuilder memory(double gb) {
+  public ArgsBuilder memory(String gb) {
     if (workflowArgs.getResources() == null) {
       workflowArgs.setResources(new Resources());
     }
-    workflowArgs.getResources().setMinimumRamGb(String.valueOf(gb));
+    workflowArgs.getResources().setMinimumRamGb(gb);
     return this;
   }
 
-  public ArgsBuilder diskSize(int gb) {
+  public ArgsBuilder diskSize(String gb) {
     if (workflowArgs.getResources() == null) {
       workflowArgs.setResources(new Resources());
     }
@@ -127,7 +127,7 @@ public class ArgsBuilder {
       workflowArgs.getResources().setDisks(new ArrayList<Disk>());
       workflowArgs.getResources().getDisks().add(new Disk());
     }
-    workflowArgs.getResources().getDisks().get(0).setSizeGb(String.valueOf(gb));
+    workflowArgs.getResources().getDisks().get(0).setSizeGb(gb);
     return this;
   }
 

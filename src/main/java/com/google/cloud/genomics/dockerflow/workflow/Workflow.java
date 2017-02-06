@@ -17,6 +17,7 @@ package com.google.cloud.genomics.dockerflow.workflow;
 
 import com.google.cloud.genomics.dockerflow.DockerflowConstants;
 import com.google.cloud.genomics.dockerflow.args.TaskArgs;
+import com.google.cloud.genomics.dockerflow.args.WorkflowArgs;
 import com.google.cloud.genomics.dockerflow.task.Task;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -47,6 +48,9 @@ public class Workflow extends Task {
 
   public Workflow(Task t) {
     super(t);
+    if (t.getArgs() != null) {
+      args = new WorkflowArgs(t.getArgs());
+    }
   }
 
   /** Recursively set global variables. Called by {@link #applyArgs(TaskArgs)}. */

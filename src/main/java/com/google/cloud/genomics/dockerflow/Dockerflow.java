@@ -114,7 +114,7 @@ public class Dockerflow implements DockerflowConstants {
               + "--" + MEMORY + "=INT\n"
               + "  Override minimum memory in GB.\n"
               + "--" + RUN_ID + "=STRING\n"
-              + "  An id provided by you to help operations to monitor or cancel.\n"
+              + "  An id provided by you to label operations to monitor or cancel.\n"
               + "--" + SERVICE_ACCOUNT_NAME + "=EMAIL\n"
               + "  Service account to use rather than the default GCE account.\n"
               + "--" + SERVICE_ACCOUNT_SCOPES + "=VAL,VAL2\n"
@@ -165,9 +165,7 @@ public class Dockerflow implements DockerflowConstants {
     
     LOG.info(
         "Running Dataflow job "
-            + ((DataflowPipelineOptions) dataflow.getOptions()).getAppName()
-            + "\nTo cancel the individual Docker steps, run:\n"
-            + "> gcloud alpha genomics operations cancel OPERATION_ID");
+            + ((DataflowPipelineOptions) dataflow.getOptions()).getAppName());
 
     PipelineResult result = dataflow.run();
 

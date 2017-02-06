@@ -443,6 +443,7 @@ public class TaskDefn implements Serializable {
     public static final String TYPE_ARRAY = "array";
     public static final String ARRAY_DELIMITER_REGEX = "\\s+";
     public static final String TYPE_FILE = "file";
+    public static final String TYPE_FOLDER = "folder";
 
     private String name;
     private String description;
@@ -564,6 +565,10 @@ public class TaskDefn implements Serializable {
 
     public boolean isFile() {
       return localCopy != null || (type != null && type.toLowerCase().startsWith(TYPE_FILE));
+    }
+
+    public boolean isFolder() {
+      return localCopy != null || (type != null && type.toLowerCase().startsWith(TYPE_FOLDER));
     }
 
     public LocalCopy getLocalCopy() {
@@ -715,7 +720,7 @@ public class TaskDefn implements Serializable {
         def = StringUtils.replaceAll(superset, def);
         p.setDefaultValue(def);
 
-        if (p.isFile() && p.getLocalCopy() != null) {
+        if ((p.isFile() || p.isFolder()) && p.getLocalCopy() != null) {
           String val = p.getLocalCopy().getPath();
           p.getLocalCopy().setPath(StringUtils.replaceAll(superset, val));
         }

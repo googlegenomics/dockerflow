@@ -31,7 +31,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -259,6 +261,8 @@ public class Task implements Serializable, GraphItem {
 
       // For CWL stuff
       applyInputBindings();
+      
+      resolveFolders();
     }
   }
 
@@ -275,12 +279,6 @@ public class Task implements Serializable, GraphItem {
 
       // Only load values for the current task
       if (prefix == null || key.startsWith(prefix)) {
-
-        // For workflow args, remove the prefix
-        if (prefix != null && key.startsWith(prefix)) {
-          LOG.debug("Removing prefix from key " + key);
-          key = key.substring(prefix.length());
-        }
 
         // If the value should be loaded from file
         if (a.isFromFile(key) && !a.get(key).startsWith("${") && !a.get(key).contains("\n")) {
@@ -366,7 +364,7 @@ public class Task implements Serializable, GraphItem {
     for (Param p : new ArrayList<Param>(defn.getParams())) {
       String val = args.get(p.getName()) == null ? p.getDefaultValue() : args.get(p.getName());
 
-      if (val != null && p.isFile()) {
+      if (val != null && (p.isFile() || p.isFolder())) {
 
         if (p.getLocalCopy() == null) {
           p.setLocalCopy(new LocalCopy());
@@ -386,6 +384,145 @@ public class Task implements Serializable, GraphItem {
               p.getLocalCopy().getPath() + " by workflow author"); 
         }
       }
+    }
+  }
+
+  /**
+   * For parameters that are folders, convert to environment variables 
+   * with locally resolved paths and edit the Docker command to do a
+   * recursive copy of inputs and outputs.
+   */
+  private void resolveFolders() {
+    LOG.debug("Resolving folders for recursive copy");
+    
+    // Distinguish between inputs and outputs
+    Set<String> inputs = new HashSet<String>();
+    if (defn.getInputParameters() != null) {
+      for (Param p : defn.getInputParameters()) {
+        inputs.add(p.getName());
+      }
+    }
+    
+    Map<String,String> gcsPaths = new LinkedHashMap<String,String>();
+    Map<String,String> localPaths = new LinkedHashMap<String,String>();
+    
+    // Loop through a copy to avoid concurrent modification
+    for (Param p : new ArrayList<Param>(defn.getParams())) {
+      String val = args.get(p.getName()) == null ? p.getDefaultValue() : args.get(p.getName());
+
+      // Folder copying is done by editing the Docker command, 
+      // not by automated file staging
+      if (val != null && p.isFolder()) {
+        gcsPaths.put(p.getName(), val);
+        localPaths.put(p.getName(), p.getLocalCopy().getPath());
+        
+        // Replace var in user script with local path
+        defn.getDocker().setCmd(
+            defn.getDocker().getCmd().replace(
+                "${" + p.getName() + "}", 
+                DockerflowConstants.DEFAULT_MOUNT_POINT + 
+                    "/" +
+                    p.getLocalCopy().getPath()));
+
+        // Turn it into an env var
+        p.setLocalCopy(null);
+        p.setType(null);
+                
+        // Create input environment variables for each output folder
+        // Remove the folder option, since it's used only by Dockerflow,
+        // and is not recognized by Pipelines API
+        if (!inputs.contains(p.getName())) {
+          defn.getOutputParameters().remove(p);
+          if (defn.getInputParameters() == null) {
+            defn.setInputParameters(new LinkedHashSet<Param>());
+          }
+          defn.getInputParameters().add(p);
+          
+          // Move output folder args to input args
+          if (args.getOutputs() != null && args.getOutputs().containsKey(p.getName())) {
+            if (args.getInputs() == null) {
+              args.setInputs(new LinkedHashMap<String,String>());
+            }
+            args.getInputs().put(p.getName(), args.getOutputs().get(p.getName()));
+            args.getOutputs().remove(p.getName());
+          }
+        }
+      }
+    }
+    
+    // Pipelines API rejects an empty parameter set
+    if (defn.getOutputParameters() != null && defn.getOutputParameters().isEmpty()) {
+      defn.setOutputParameters(null);
+    }
+
+    final String INSTALL_GSUTIL = 
+        "\n# Install gsutil\n" +
+        "if ! type gsutil; then\n" +
+        "  apt-get update\n" +
+        "  apt-get --yes install apt-utils gcc python-dev python-setuptools ca-certificates\n" +
+        "  easy_install -U pip\n" +
+        "  pip install -U crcmod\n" +
+        "\n" +
+        "  apt-get --yes install lsb-release\n" +
+        "  export CLOUD_SDK_REPO=\"cloud-sdk-$(lsb_release -c -s)\"\n" +
+        "  echo \"deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main\" >> /etc/apt/sources.list.d/google-cloud-sdk.list\n" +
+        "  apt-get update && apt-get --yes install curl\n" +
+        "  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -\n" +
+        "  apt-get update && apt-get --yes install google-cloud-sdk\n" +
+        "fi\n";
+
+    // Prepare commands to copy the folders
+    StringBuilder copyInputs = new StringBuilder();
+    StringBuilder copyOutputs = new StringBuilder();
+    
+    for (String name : gcsPaths.keySet()) {
+      // Copy input folder
+      if (inputs.contains(name)) {
+        copyInputs.append(
+            String.format(
+                "mkdir -p %s/%s\n",
+                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                localPaths.get(name)) +
+            String.format(
+                "\nfor ((i = 0; i < 3; i++)); do\n" +
+                    "  if gsutil -m rsync -r %s/ %s/%s; then\n" +
+                    "    break\n" +
+                    "  elif ((i == 2)); then\n" +
+                    "    2>&1 echo \"Recursive localization failed.\"\n" +
+                    "    exit 1\n" +
+                    "  fi\n" +
+                    "done\n",
+                gcsPaths.get(name),
+                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                localPaths.get(name)));
+      // Copy output folder
+      } else {
+        copyOutputs.append(
+            String.format(
+                "\nfor ((i = 0; i < 3; i++)); do\n" +
+                    "  if gsutil -m rsync -r %s/%s %s/; then\n" +
+                    "    break\n" +
+                    "  elif ((i == 2)); then\n" +
+                    "    2>&1 echo \"Recursive delocalization failed.\"\n" +
+                    "    exit 1\n" +
+                    "  fi\n" +
+                    "done\n",
+                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                localPaths.get(name),
+                gcsPaths.get(name)));
+      }
+    }
+    
+    // Edit the Docker command to copy the folders
+    if (!gcsPaths.isEmpty()) {
+      defn.getDocker().setCmd(
+          INSTALL_GSUTIL +
+          "\n# Copy inputs\n" +
+          copyInputs.toString() + 
+          "\n# Run user script\n" +
+          defn.getDocker().getCmd() + 
+          "\n# Copy outputs\n" +
+          copyOutputs.toString());
     }
   }
 
@@ -414,8 +551,8 @@ public class Task implements Serializable, GraphItem {
 
     LOG.info("Resolving paths vs " + parentPath);
     for (Param p : defn.getParams()) {
-      LOG.debug(p.getName() + " is a file? " + p.isFile());
-      if (!p.isFile()) {
+      LOG.debug(p.getName() + " is a file? " + p.isFile() + " is folder? " + p.isFolder());
+      if (!p.isFile() && !p.isFolder()) {
         continue;
       }
 
@@ -455,7 +592,17 @@ public class Task implements Serializable, GraphItem {
         if (i > 0) {
           sb.append(separator);
         }
-        sb.append(FileUtils.resolve(s, parentPath));
+        try {
+          sb.append(FileUtils.resolve(s, parentPath));
+        } catch(Exception e) {
+          String msg = "Failed to resolve path: " + s;
+          if (System.getenv(DockerflowConstants.DOCKERFLOW_TEST) != null
+              && Boolean.parseBoolean(System.getenv(DockerflowConstants.DOCKERFLOW_TEST))) {
+            LOG.warn(msg + ". Cause: " + e.getMessage());
+          } else {
+            throw new IllegalStateException(msg, e);
+          }
+        }
       }
       LOG.debug("Resolved path to: " + sb);
 

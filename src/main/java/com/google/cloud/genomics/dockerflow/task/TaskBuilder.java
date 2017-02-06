@@ -94,6 +94,11 @@ public class TaskBuilder {
     return this;
   }
 
+  public TaskBuilder name(String name) {
+    task.getDefn().setName(name);
+    return this;
+  }
+
   public TaskBuilder docker(String imageName) {
     if (task.getDefn().getDocker() == null) {
       task.getDefn().setDocker(new Docker());
@@ -114,6 +119,12 @@ public class TaskBuilder {
     p.setName(name);
     p.setDefaultValue(value);
     task.getDefn().getInputParameters().add(p);
+    return this;
+  }
+
+  public TaskBuilder inputFromFile(String name, String value) {
+    input(name, value);
+    task.getArgs().setFromFile(name, true);
     return this;
   }
 
@@ -431,6 +442,11 @@ public class TaskBuilder {
 
   public TaskBuilder parallelizeBy(String inputName) {
     task.setScatterBy(inputName);
+    return this;
+  }
+
+  public TaskBuilder testing(boolean b) {
+    ((WorkflowArgs)task.getArgs()).setTesting(b);
     return this;
   }
 
