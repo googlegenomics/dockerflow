@@ -421,7 +421,8 @@ public class Task implements Serializable, GraphItem {
             defn.getDocker().getCmd().replace(
                 "${" + p.getName() + "}", 
                 DockerflowConstants.DEFAULT_MOUNT_POINT + 
-                p.getLocalCopy().getPath() + "\""));
+                    "/" +
+                    p.getLocalCopy().getPath()));
 
         // Turn it into an env var
         p.setLocalCopy(null);
@@ -455,7 +456,7 @@ public class Task implements Serializable, GraphItem {
     }
 
     final String INSTALL_GSUTIL = 
-        "# Install gsutil\n" +
+        "\n# Install gsutil\n" +
         "if ! type gsutil; then\n" +
         "  apt-get update\n" +
         "  apt-get --yes install apt-utils gcc python-dev python-setuptools ca-certificates\n" +
@@ -470,7 +471,7 @@ public class Task implements Serializable, GraphItem {
         "  apt-get update && apt-get --yes install google-cloud-sdk\n" +
         "fi\n";
 
-    // Edit the Docker command to copy the folders
+    // Prepare commands to copy the folders
     StringBuilder copyInputs = new StringBuilder();
     StringBuilder copyOutputs = new StringBuilder();
     
@@ -478,56 +479,49 @@ public class Task implements Serializable, GraphItem {
       // Copy input folder
       if (inputs.contains(name)) {
         copyInputs.append(
-            "mkdir -p " +
-                DockerflowConstants.DEFAULT_MOUNT_POINT  + 
-                "/" +
-                localPaths.get(name) 
-                + " \n" +
-            "for ((i = 0; i < 3; i++)); do\n" +
-            "  if gsutil -m rsync -r "  + 
-                gcsPaths.get(name) + 
-                "/ " +
-                DockerflowConstants.DEFAULT_MOUNT_POINT + 
-                "/" +
-                localPaths.get(name) +
-                "/ ; then\n" +
-            "    break\n" +
-            "  elif ((i == 2)); then\n" +
-            "    2>&1 echo \"Recursive localization failed.\"\n" +
-            "    exit 1\n" +
-            "  fi\n" +
-            "done\n\n");
+            String.format(
+                "mkdir -p %s/%s\n",
+                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                localPaths.get(name)) +
+            String.format(
+                "\nfor ((i = 0; i < 3; i++)); do\n" +
+                    "  if gsutil -m rsync -r %s/ %s/%s; then\n" +
+                    "    break\n" +
+                    "  elif ((i == 2)); then\n" +
+                    "    2>&1 echo \"Recursive localization failed.\"\n" +
+                    "    exit 1\n" +
+                    "  fi\n" +
+                    "done\n",
+                gcsPaths.get(name),
+                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                localPaths.get(name)));
       // Copy output folder
       } else {
         copyOutputs.append(
-            "for ((i = 0; i < 3; i++)); do\n" +
-            "  if gsutil -m rsync -r " + 
-                DockerflowConstants.DEFAULT_MOUNT_POINT +
-                "/" +
-                localPaths.get(name) + 
-                "/ " +
-                gcsPaths.get(name) + 
-                "/ ; then\n" +
-            "    break\n" +
-            "  elif ((i == 2)); then\n" +
-            "    2>&1 echo \"Recursive delocalization failed.\"\n" +
-            "    exit 1\n" +
-            "  fi\n" +
-            "done\n\n");
+            String.format(
+                "\nfor ((i = 0; i < 3; i++)); do\n" +
+                    "  if gsutil -m rsync -r %s/%s %s/; then\n" +
+                    "    break\n" +
+                    "  elif ((i == 2)); then\n" +
+                    "    2>&1 echo \"Recursive delocalization failed.\"\n" +
+                    "    exit 1\n" +
+                    "  fi\n" +
+                    "done\n",
+                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                localPaths.get(name),
+                gcsPaths.get(name)));
       }
     }
     
+    // Edit the Docker command to copy the folders
     if (!gcsPaths.isEmpty()) {
       defn.getDocker().setCmd(
-          "\n" +
           INSTALL_GSUTIL +
-          "\n" +
-          "# Copy inputs\n" +
+          "\n# Copy inputs\n" +
           copyInputs.toString() + 
-          "# Run user script\n" +
+          "\n# Run user script\n" +
           defn.getDocker().getCmd() + 
-          "\n\n" +
-          "# Copy outputs\n" +
+          "\n# Copy outputs\n" +
           copyOutputs.toString());
     }
   }
