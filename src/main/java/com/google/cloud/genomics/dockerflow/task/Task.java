@@ -427,8 +427,9 @@ public class Task implements Serializable, GraphItem {
         p.setLocalCopy(null);
         p.setType(null);
                 
-        // Move output folders to input parameters
-        // because outputs can only be files
+        // Create input environment variables for each output folder
+        // Remove the folder option, since it's used by Dockerflow,
+        // and is not recognized by Pipelines API
         if (!inputs.contains(p.getName())) {
           defn.getOutputParameters().remove(p);
           if (defn.getInputParameters() == null) {
@@ -436,7 +437,7 @@ public class Task implements Serializable, GraphItem {
           }
           defn.getInputParameters().add(p);
           
-          // move output folder args to input args
+          // Move output folder args to input args
           if (args.getOutputs() != null && args.getOutputs().containsKey(p.getName())) {
             if (args.getInputs() == null) {
               args.setInputs(new LinkedHashMap<String,String>());
@@ -448,11 +449,27 @@ public class Task implements Serializable, GraphItem {
       }
     }
     
-    // Pipelines API chokes on empty output parameter set
+    // Pipelines API rejects an empty parameter set
     if (defn.getOutputParameters() != null && defn.getOutputParameters().isEmpty()) {
       defn.setOutputParameters(null);
     }
-    
+
+    final String INSTALL_GSUTIL = 
+        "# Install gsutil\n" +
+        "if ! type gsutil; then\n" +
+        "  apt-get update\n" +
+        "  apt-get --yes install apt-utils gcc python-dev python-setuptools ca-certificates\n" +
+        "  easy_install -U pip\n" +
+        "  pip install -U crcmod\n" +
+        "\n" +
+        "  apt-get --yes install lsb-release\n" +
+        "  export CLOUD_SDK_REPO=\"cloud-sdk-$(lsb_release -c -s)\"\n" +
+        "  echo \"deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main\" >> /etc/apt/sources.list.d/google-cloud-sdk.list\n" +
+        "  apt-get update && apt-get --yes install curl\n" +
+        "  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -\n" +
+        "  apt-get update && apt-get --yes install google-cloud-sdk\n" +
+        "fi\n";
+
     // Edit the Docker command to copy the folders
     StringBuilder copyInputs = new StringBuilder();
     StringBuilder copyOutputs = new StringBuilder();
@@ -499,23 +516,11 @@ public class Task implements Serializable, GraphItem {
             "done\n\n");
       }
     }
+    
     if (!gcsPaths.isEmpty()) {
       defn.getDocker().setCmd(
           "\n" +
-          "# Install gsutil\n" +
-          "if ! type gsutil; then\n" +
-          "  apt-get update\n" +
-          "  apt-get --yes install apt-utils gcc python-dev python-setuptools ca-certificates\n" +
-          "  easy_install -U pip\n" +
-          "  pip install -U crcmod\n" +
-          "\n" +
-          "  apt-get --yes install lsb-release\n" +
-          "  export CLOUD_SDK_REPO=\"cloud-sdk-$(lsb_release -c -s)\"\n" +
-          "  echo \"deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main\" >> /etc/apt/sources.list.d/google-cloud-sdk.list\n" +
-          "  apt-get update && apt-get --yes install curl\n" +
-          "  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -\n" +
-          "  apt-get update && apt-get --yes install google-cloud-sdk\n" +
-          "fi\n" +
+          INSTALL_GSUTIL +
           "\n" +
           "# Copy inputs\n" +
           copyInputs.toString() + 
