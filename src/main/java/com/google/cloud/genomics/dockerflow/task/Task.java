@@ -429,7 +429,7 @@ public class Task implements Serializable, GraphItem {
         p.setType(null);
                 
         // Create input environment variables for each output folder
-        // Remove the folder option, since it's used by Dockerflow,
+        // Remove the folder option, since it's used only by Dockerflow,
         // and is not recognized by Pipelines API
         if (!inputs.contains(p.getName())) {
           defn.getOutputParameters().remove(p);
