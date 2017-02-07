@@ -564,11 +564,12 @@ public class TaskDefn implements Serializable {
     }
 
     public boolean isFile() {
-      return localCopy != null || (type != null && type.toLowerCase().startsWith(TYPE_FILE));
+      return (type == null && localCopy != null) || 
+          (type != null && type.toLowerCase().startsWith(TYPE_FILE));
     }
 
     public boolean isFolder() {
-      return localCopy != null || (type != null && type.toLowerCase().startsWith(TYPE_FOLDER));
+      return type != null && type.toLowerCase().startsWith(TYPE_FOLDER);
     }
 
     public LocalCopy getLocalCopy() {
