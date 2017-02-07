@@ -84,12 +84,6 @@ public class DockerflowITCase extends DockerflowTest {
 
   @Test
   @Override
-  public void testNestedGraph() throws Exception {
-    super.testNestedGraph();
-  }
-
-  @Test
-  @Override
   public void testBranchingGraph() throws Exception {
     super.testBranchingGraph(); 
   }

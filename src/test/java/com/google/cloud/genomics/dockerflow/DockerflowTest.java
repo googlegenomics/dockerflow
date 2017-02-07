@@ -125,10 +125,8 @@ public class DockerflowTest implements DockerflowConstants {
         new String[] {
           "--" + PROJECT + "=" + TestUtils.TEST_PROJECT,
           "--" + WORKFLOW_FILE + "=" + utils.baseDir + "/linear-graph.yaml",
-          "--" + LOGGING + "=" + utils.baseDir + "/linear",
-          "--" + STAGING + "=" + utils.baseDir + "/dataflow",
-          "--" + INPUTS + "=BASE_DIR=" + utils.baseDir,
           "--" + WORKSPACE + "=" + utils.baseDir + "/linear",
+          "--" + INPUTS + "=BASE_DIR=" + utils.baseDir,
           "--" + TEST + "=" + DockerflowConstants.DIRECT_RUNNER.equals(utils.runner),
           "--" + RUNNER + "=" + utils.runner
         });
@@ -204,27 +202,6 @@ public class DockerflowTest implements DockerflowConstants {
       LOG.info("\"" + output + "\"");
 
       assertEquals("Output doesn't match expected", TestUtils.OUTPUT_TWO_ONE, output);
-    }
-  }
-
-  @Test
-  public void testNestedGraph() throws Exception {
-    Dockerflow.main(
-        new String[] {
-          "--" + PROJECT + "=" + TestUtils.TEST_PROJECT,
-          "--" + WORKFLOW_FILE + "=" + utils.baseDir + "/nested-graph.yaml",
-          "--" + LOGGING + "=" + utils.baseDir + "/nested",
-          "--" + STAGING + "=" + utils.baseDir + "/dataflow",
-          "--" + WORKSPACE + "=" + utils.baseDir + "/nested",
-          "--" + INPUTS + "=BASE_DIR=" + utils.baseDir,
-          "--" + TEST + "=" + DockerflowConstants.DIRECT_RUNNER.equals(utils.runner),
-          "--" + RUNNER + "=" + utils.runner
-        });
-    if (utils.checkOutput) {
-      String output = TestUtils.readAll(utils.baseDir + "/nested/stepThree/output-three.txt");
-      LOG.info("\"" + output + "\"");
-
-      assertEquals("Output doesn't match expected", TestUtils.OUTPUT_ONE_TWO_THREE, output);
     }
   }
 

@@ -1,23 +1,15 @@
 name: TaskTwo
 inputParameters:
 - name: inputFile
-  localCopy:
-    disk: datadisk
-    path: in.txt
+  type: file
 - name: message
   defaultValue: goodbye
 outputParameters:
 - name: outputFile
-  localCopy:
-    disk: datadisk
-    path: out.txt
-resources:
-  zones:
-  - us-central1-a
-  disks:
-  - name: datadisk
-    type: PERSISTENT_HDD
-    mountPoint: /mnt/data
+  type: file
 docker:
   imageName: ubuntu
-  cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
+  cmd: |
+    mkdir -p $(dirname ${outputFile})
+    cp ${inputFile} ${outputFile}
+    echo ${message} >> ${outputFile}

@@ -30,4 +30,7 @@ resources:
     mountPoint: /mnt/data
 docker:
   imageName: ubuntu
-  cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
+  cmd: |
+    mkdir -p $(dirname ${outputFile})
+    cp ${inputFile} ${outputFile}
+    echo ${message} >> ${outputFile}

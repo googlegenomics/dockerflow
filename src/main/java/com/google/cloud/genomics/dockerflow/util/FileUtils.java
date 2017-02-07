@@ -145,7 +145,7 @@ public class FileUtils {
   }
 
   /**
-   * A local path or file name on local disk.
+   * Convert a GCS path to a local file path of the form gs/bucket/file.
    *
    * @param gcsPath GCS path or, if testing locally, a path on the local machine
    */
@@ -153,22 +153,15 @@ public class FileUtils {
     if (gcsPath == null) {
       return null;
     }
-    String localPath = gcsPath;
-
-    // If multiple files, store in the root of the mounted drive
-    if (gcsPath.indexOf("*") > 0 || gcsPath.split("\\s+").length > 1) {
-      localPath = "";
-    // Otherwise store by the input file name, prefixed with a hashcode
-    // for the parent path, so files in the same directory preserve name relations.
-    // Eg, file.tar and file.tar.gz.
-    } else {
-      String dir = gcsPath.contains("/") ? gcsPath.substring(0, gcsPath.lastIndexOf("/")) : gcsPath;
-      localPath =
-          String.valueOf(dir.hashCode()).replace("-", "")
-              + "-"
-              + gcsPath.substring(gcsPath.lastIndexOf("/") + 1);
+    String localPath = gcsPath.replace("gs://", "gs/");
+    if (localPath.startsWith("/")) {
+      localPath = localPath.substring(1);
     }
-
+    
+    // For wildcards, use the parent folder
+    if (localPath.indexOf("*") > 0 || localPath.split("\\s+").length > 1) {
+      localPath = localPath.substring(0, localPath.lastIndexOf("/"));
+    }
     return localPath;
   }
 

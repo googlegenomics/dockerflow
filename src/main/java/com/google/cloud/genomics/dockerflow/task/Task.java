@@ -499,7 +499,7 @@ public class Task implements Serializable, GraphItem {
       } else {
         copyOutputs.append(
             String.format(
-                "\nfor ((i = 0; i < 3; i++)); do\n" +
+                "for ((i = 0; i < 3; i++)); do\n" +
                     "  if gsutil -m rsync -r %s/%s %s/; then\n" +
                     "    break\n" +
                     "  elif ((i == 2)); then\n" +
@@ -521,7 +521,7 @@ public class Task implements Serializable, GraphItem {
           copyInputs.toString() + 
           "\n# Run user script\n" +
           defn.getDocker().getCmd() + 
-          "\n# Copy outputs\n" +
+          "\n\n# Copy outputs\n" +
           copyOutputs.toString());
     }
   }
