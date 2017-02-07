@@ -142,7 +142,7 @@ public class DataflowFactory implements DockerflowConstants {
       for (String key : workflowArgs.keySet()) {
         WorkflowArgs instanceArgs = workflowArgs.get(key);
         instanceArgs.mergeDefaultArgs(workflow.getArgs());
-        LOG.info("Merged args: " + StringUtils.toJson(instanceArgs));
+        LOG.debug("Merged args: " + StringUtils.toJson(instanceArgs));
       }
     }
 
