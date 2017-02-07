@@ -8,7 +8,7 @@ This is a "hello, world" example of Dockerflow, showing both YAML and Java versi
 
 ## Prerequisites
 
-1. Complete the [Dockerflow](/googlegenomics/dockerflow) Getting Started instructions.
+1. Complete the [Dockerflow](https://github.com/googlegenomics/dockerflow#getting-started) Getting Started instructions.
 
 ## Running the example
 

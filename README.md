@@ -58,12 +58,16 @@ Workflow Language]
 
 1.  Sign up for a Google Cloud Platform account and [create a project]
     (https://console.cloud.google.com/project?).
+
 2.  [Enable the APIs]
     (https://console.cloud.google.com/flows/enableapi?apiid=genomics,dataflow,storage_component,compute_component&redirect=https://console.cloud.google.com)
-    for Cloud Dataflow, Google Genomics, Compute Engine and Cloud Storage.\
-3.  [Install the Google Cloud SDK](https://cloud.google.com/sdk/) and run
+    for Cloud Dataflow, Google Genomics, Compute Engine and Cloud Storage.
+3.  [Install the Google Cloud SDK](https://cloud.google.com/sdk/) and run:
 
         gcloud init
+        gcloud auth login
+        gcloud beta auth application-default login
+        gcloud components update
 
 ## Getting started
 
@@ -78,25 +82,83 @@ Run the following steps on your laptop or local workstation:
         cd dockerflow
         mvn package -DskipTests
 
-3. Set up the DOCKERFLOW_HOME environment.
+3.  Set up the DOCKERFLOW_HOME environment.
 
         export DOCKERFLOW_HOME="$(pwd)"
         export PATH="${PATH}":"${DOCKERFLOW_HOME}/bin"
         chmod +x bin/*
 
-4.  Run a sample workflow:
+4.  Set up your local project environmental variables.
 
-        dockerflow --project=MY-PROJECT \
-            --workflow-file=src/test/resources/linear-graph.yaml \
-            --workspace=gs://MY-BUCKET/MY-PATH \
-            --runner=DirectPipelineRunner
+        export PROJECT_NAME=$(gcloud config list project | grep = | cut -d ' ' -f 3)
+        export WORKSPACE_BUCKET=gs://MY-BUCKET
+        gsutil mb $WORKSPACE_BUCKET
+        export WORKSPACE_PATH=$WORKSPACE_BUCKET/MY-PATH
 
-Set `MY-PROJECT` to your cloud project name, and set `MY-BUCKET` and `MY-PATH`
-to your cloud bucket and folder.
+    Set `MY-BUCKET` and `MY-PATH` to your cloud bucket and folder.  A `gsutil mb` command
+    is included above to ensure that bucket `MY-BUCKET` exists.  Subdirectory `MY-PATH`
+    does not need to exist, as it will be created by running the workflow.
 
-The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
-will block until the workflow completes. To run in your cloud project, you can
-remove the `--runner` option to use the default Dataflow runner.
+5.  Create a workflow
+
+        echo "
+        version: v1alpha2
+        defn:
+          name: LinearGraph
+          description: A simple linear graph.
+        args:
+          inputs:
+            BASE_DIR: $WORKSPACE_PATH
+            stepOne.inputFile: \${BASE_DIR}/input-one.txt
+            stepTwo.inputFile: \${stepOne.outputFile}
+          outputs:
+            stepOne.outputFile: output-one.txt
+            stepTwo.outputFile: output-two.txt
+        steps: 
+        - defn:
+            name: stepOne
+          defnFile: $DOCKERFLOW_HOME/src/test/resources/task-one.yaml
+        - defn:
+            name: stepTwo
+          defnFile: $DOCKERFLOW_HOME/src/test/resources/task-two.yaml
+        " > ./linear-graph.yaml
+
+        echo "puppy dog" | gsutil cp - $WORKSPACE_PATH/input-one.txt
+
+    The commands above
+    * Create a new file in the current working directory called `linear-graph.yaml`.  It's based on the dockerflow unit test yaml file [here](https://github.com/allenday/dockerflow/blob/master/src/test/resources/linear-graph.yaml).  Note that it references two additional yaml files for steps `stepOne` and `stepTwo`.
+    * Create an input file for the workflow.  Contents are `puppy dog`.
+
+6.  Run a sample workflow:
+
+    There are two ways to do this:
+
+    * Locally and blocking:
+
+      ```
+      dockerflow --project=$PROJECT_NAME \
+        --workflow-file=./linear-graph.yaml \
+        --workspace=$WORKSPACE_PATH \
+        --runner=DirectPipelineRunner
+      ```
+
+      This will not return control to the shell until the job completes.
+
+
+    * Remotely and non-blocking, with visualization.
+
+      ```
+      dockerflow --project=$PROJECT_NAME \
+        --workflow-file=./linear-graph.yaml \
+        --workspace=$WORKSPACE_PATH
+      ```
+
+      Here we simply remove the parameter `--runner=DirectPipelineRunner`.  The effect
+      is that the workflow is launched and control is returned to the current shell.
+      With the non-blocking version, it's possible to [monitor and visualize Workflow progress](https://console.cloud.google.com/dataflow).
+
+
+    `$PROJECT_NAME` and `$WORKSPACE_PATH` are defined in step 4 above.
 
 ## Docker and Dataflow vs custom scripts
 
@@ -238,9 +300,9 @@ If you have a large number of values you'd like to run at once, you can pass
 them in from a file, using the `--inputs-from-file` option.
 
     dockerflow \
-        --project=MY_PROJECT \
+        --project=$PROJECT_NAME \
         --workflow-file=src/test/resources/parallel-graph.yaml \
-        --workspace=gs://MY-BUCKET/MY-PATH \
+        --workspace=$WORKSPACE_PATH \
         --inputs-from-file=parallelTask.inputFile=many_files.txt
 
 The file `many_files.txt` can contain many file paths. All will run, with
@@ -333,9 +395,9 @@ task names in the included files will be used.
 
 Finally, you can set parameters from the command-line:
 
-    dockerflow --project=MY_PROJECT \
+    dockerflow --project=$PROJECT_NAME \
         --workflow-file=src/test/resources/parallel-graph.yaml \
-        --workspace=gs://MY-BUCKET/MY-PATH \
+        --workspace=$WORKSPACE_PATH \
         --outputs=stepOne.outputFile=output-one.txt,\
             stepTwo.outputFile=output-two.txt \
         --inputs=stepTwo.inputFile=output-one.txt
