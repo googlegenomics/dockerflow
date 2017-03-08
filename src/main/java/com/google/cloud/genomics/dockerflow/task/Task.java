@@ -474,15 +474,18 @@ public class Task implements Serializable, GraphItem {
     // Prepare commands to copy the folders
     StringBuilder copyInputs = new StringBuilder();
     StringBuilder copyOutputs = new StringBuilder();
+    StringBuilder mkdirs = new StringBuilder();
     
     for (String name : gcsPaths.keySet()) {
+      mkdirs.append(
+          String.format(
+              "mkdir -p %s/%s\n",
+              DockerflowConstants.DEFAULT_MOUNT_POINT,
+              localPaths.get(name)));
+      
       // Copy input folder
       if (inputs.contains(name)) {
         copyInputs.append(
-            String.format(
-                "mkdir -p %s/%s\n",
-                DockerflowConstants.DEFAULT_MOUNT_POINT,
-                localPaths.get(name)) +
             String.format(
                 "\nfor ((i = 0; i < 3; i++)); do\n" +
                     "  if gsutil -m rsync -r %s/ %s/%s; then\n" +
@@ -499,10 +502,6 @@ public class Task implements Serializable, GraphItem {
       } else {
         copyOutputs.append(
             String.format(
-                String.format(
-                        "mkdir -p %s/%s\n",
-                        DockerflowConstants.DEFAULT_MOUNT_POINT,
-                        localPaths.get(name)) +
                 "for ((i = 0; i < 3; i++)); do\n" +
                     "  if gsutil -m rsync -r %s/%s %s/; then\n" +
                     "    break\n" +
@@ -521,6 +520,8 @@ public class Task implements Serializable, GraphItem {
     if (!gcsPaths.isEmpty()) {
       defn.getDocker().setCmd(
           INSTALL_GSUTIL +
+          "\n# Make directories\n" +
+          mkdirs.toString() +
           "\n# Copy inputs\n" +
           copyInputs.toString() + 
           "\n# Run user script\n" +
