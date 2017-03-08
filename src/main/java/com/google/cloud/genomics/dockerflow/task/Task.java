@@ -499,6 +499,10 @@ public class Task implements Serializable, GraphItem {
       } else {
         copyOutputs.append(
             String.format(
+                String.format(
+                        "mkdir -p %s/%s\n",
+                        DockerflowConstants.DEFAULT_MOUNT_POINT,
+                        localPaths.get(name)) +
                 "for ((i = 0; i < 3; i++)); do\n" +
                     "  if gsutil -m rsync -r %s/%s %s/; then\n" +
                     "    break\n" +
