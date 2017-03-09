@@ -477,7 +477,7 @@ public class Task implements Serializable, GraphItem {
     StringBuilder mkdirs = new StringBuilder();
 
     for (String name : localPaths.keySet()) {
-	  if (gcsPaths.containsKey(name)) {
+      if (gcsPaths.containsKey(name)) {
         mkdirs.append(
             String.format(
                 "mkdir -p %s/%s\n",
