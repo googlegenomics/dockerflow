@@ -412,7 +412,7 @@ public class Task implements Serializable, GraphItem {
 
       // Remember folder and output paths for mkdir -p
       if (val != null && (p.isFolder() || (p.isFile() && !inputs.contains(p.getName())))) {
-          localPaths.put(p.getName(), p.getLocalCopy().getPath());    	  
+        localPaths.put(p.getName(), p.getLocalCopy().getPath());    	  
       }
       
       // Folder copying is done by editing the Docker command, 
