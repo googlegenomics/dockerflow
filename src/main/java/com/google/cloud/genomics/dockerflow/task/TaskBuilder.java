@@ -184,7 +184,7 @@ public class TaskBuilder {
    * given by ${name}.
    */
   public TaskBuilder inputFile(String name, String defaultGcsPath, String localPath) {
-	return inputPath(name, defaultGcsPath, localPath, false);
+    return inputPath(name, defaultGcsPath, localPath, false);
   }
 
   /**
@@ -209,7 +209,7 @@ public class TaskBuilder {
    * given by ${name}.
    */
   public TaskBuilder inputFolder(String name, String defaultGcsPath, String localPath) {
-	return inputPath(name, defaultGcsPath, localPath, true);
+    return inputPath(name, defaultGcsPath, localPath, true);
   }
  
   /**

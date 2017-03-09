@@ -422,7 +422,7 @@ public class Task implements Serializable, GraphItem {
 
         // Turn it into an env var
         args.set(p.getName(),
-        	DockerflowConstants.DEFAULT_MOUNT_POINT + 
+            DockerflowConstants.DEFAULT_MOUNT_POINT + 
                 "/" +
                 p.getLocalCopy().getPath());
         p.setLocalCopy(null);
