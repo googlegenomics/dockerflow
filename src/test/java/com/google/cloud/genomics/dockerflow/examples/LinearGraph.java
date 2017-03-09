@@ -59,7 +59,7 @@ public class LinearGraph {
             .input("message", "hello")
             .outputFile("outputFile", tmpFile)
             .docker("ubuntu")
-            .script("mkdir -p $(dirname ${outputFile}); cp ${inputFile} ${outputFile} ; echo ${message} >> ${outputFile}")
+            .script("cp ${inputFile} ${outputFile} ; echo ${message} >> ${outputFile}")
             .build();
 
     Task stepTwo =
@@ -71,7 +71,7 @@ public class LinearGraph {
             .input("message", "goodbye")
             .outputFile("outputFile", outputFile)
             .docker("ubuntu")
-            .script("mkdir -p $(dirname ${outputFile}); cp ${inputFile} ${outputFile} ; echo ${message} >> ${outputFile}")
+            .script("cp ${inputFile} ${outputFile} ; echo ${message} >> ${outputFile}")
             .build();
 
     LOG.info("Defining and running Dataflow pipeline");

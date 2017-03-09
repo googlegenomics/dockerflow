@@ -6,9 +6,7 @@ steps:
     name: SimpleTask
     inputParameters:
     - name: inputFile
-      localCopy:
-        disk: datadisk
-        path: in.txt
+      type: file
     - name: string
       type: string[]
       defaultValue: onetwothree
@@ -40,9 +38,7 @@ steps:
         separate: false
     outputParameters:
     - name: outputFile
-      localCopy:
-        disk: datadisk
-        path: out.txt
+      type: file
     docker:
       imageName: ubuntu
       cmd: "echo"

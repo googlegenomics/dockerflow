@@ -10,6 +10,5 @@ outputParameters:
 docker:
   imageName: ubuntu
   cmd: |
-    mkdir -p $(dirname ${outputFile})
     cp ${inputFile} ${outputFile}
     echo ${message} >> ${outputFile}
