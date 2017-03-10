@@ -405,6 +405,14 @@ public class Task implements Serializable, GraphItem {
     
     Map<String,String> gcsPaths = new LinkedHashMap<String,String>();
     Map<String,String> localPaths = new LinkedHashMap<String,String>();
+    String mountPoint;
+    if (defn.getResources() != null &&
+        defn.getResources().getDisks() != null &&
+        !defn.getResources().getDisks().isEmpty()) {
+      mountPoint = defn.getResources().getDisks().get(0).getMountPoint();
+    } else {
+      mountPoint = DockerflowConstants.DEFAULT_MOUNT_POINT;
+    }
     
     // Loop through a copy to avoid concurrent modification
     for (Param p : new ArrayList<Param>(defn.getParams())) {
@@ -421,10 +429,7 @@ public class Task implements Serializable, GraphItem {
         gcsPaths.put(p.getName(), val);
 
         // Turn it into an env var
-        args.set(p.getName(),
-            DockerflowConstants.DEFAULT_MOUNT_POINT + 
-                "/" +
-                p.getLocalCopy().getPath());
+        args.set(p.getName(), mountPoint + "/" + p.getLocalCopy().getPath());
         p.setLocalCopy(null);
         p.setType(null);
                 
@@ -481,13 +486,13 @@ public class Task implements Serializable, GraphItem {
         mkdirs.append(
             String.format(
                 "mkdir -p %s/%s\n",
-                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                mountPoint,
                 localPaths.get(name)));  
       } else {
         mkdirs.append(
             String.format(
                 "mkdir -p $(dirname %s/%s)\n",
-                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                mountPoint,
                 localPaths.get(name)));  
       }
     }
@@ -506,7 +511,7 @@ public class Task implements Serializable, GraphItem {
                     "  fi\n" +
                     "done\n",
                 gcsPaths.get(name),
-                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                mountPoint,
                 localPaths.get(name)));
       // Copy output folder
       } else {
@@ -520,7 +525,7 @@ public class Task implements Serializable, GraphItem {
                     "    exit 1\n" +
                     "  fi\n" +
                     "done\n",
-                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                mountPoint,
                 localPaths.get(name),
                 gcsPaths.get(name)));
       }
