@@ -14,4 +14,4 @@ steps:
     resources:
     docker:
       imageName: ubuntu:16.04
-      cmd: "cp -rf ${inputFolder} ${outputFolder}"
+      cmd: cp -rf ${inputFolder}/* ${outputFolder}

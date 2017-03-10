@@ -156,11 +156,28 @@ public class ArgsTableBuilder implements DockerflowConstants {
           if (name.startsWith(PREFIX_INPUT)) {
             name = name.replace(PREFIX_INPUT, "");
             args.input(name, val);
+          } else if (name.startsWith(INPUTS + "=")) {
+            name = name.replace(INPUTS + "=", "");
+            args.input(name, val);
+          } else if (name.startsWith(INPUTS_FROM_FILE + "=")) {
+            name = name.replace(INPUTS_FROM_FILE + "=", "");
+            args.inputFromFile(name, val);
           } else if (name.startsWith(PREFIX_OUTPUT)) {
             name = name.replace(PREFIX_OUTPUT, "");
             args.output(name, val);
+          } else if (name.startsWith(OUTPUTS + "=")) {
+            name = name.replace(OUTPUTS + "=", "");
+            args.input(name, val);
           } else if (LOGGING.equals(name)) {
             args.logging(val);
+          } else if (WORKSPACE.equals(name)) {
+            args.workspace(val);
+          } else if (MEMORY.equals(name)) {
+            args.memory(val);
+          } else if (DISK_SIZE.equals(name)) {
+            args.diskSize(val);
+          } else if (CPU.equals(name)) {
+            args.cpu(Integer.parseInt(val));
           } else {
             args.input(name, val);
           }

@@ -11,22 +11,13 @@ steps:
     inputParameters:
     - name: inputFile
       defaultValue: ${BASE_DIR}/input-one.txt
-      localCopy:
-        disk: datadisk
-        path: in.txt
+      type: file
     - name: message
       defaultValue: hello
     outputParameters:
     - name: outputFile
       defaultValue: ${BASE_DIR}/linear/output-one.txt
-      localCopy:
-        disk: datadisk
-        path: out.txt
-    resources:
-      disks:
-      - name: datadisk
-        type: PERSISTENT_HDD
-        mountPoint: /mnt/data
+      type: file
     docker:
       imageName: ubuntu
       cmd: "cp /mnt/data/in.txt /mnt/data/out.txt; echo ${message} >> /mnt/data/out.txt"
@@ -35,22 +26,13 @@ steps:
     inputParameters:
     - name: inputFile
       defaultValue: ${BASE_DIR}/linear/output-one.txt
-      localCopy:
-        disk: datadisk
-        path: in.txt
+      type: file
     - name: message
       defaultValue: goodbye
     outputParameters:
     - name: outputFile
       defaultValue: ${BASE_DIR}/linear/output-two.txt
-      localCopy:
-        disk: datadisk
-        path: out.txt
-    resources:
-      disks:
-      - name: datadisk
-        type: PERSISTENT_HDD
-        mountPoint: /mnt/data
+      type: file
     docker:
       imageName: ubuntu
       cmd: "cp /mnt/data/in.txt /mnt/data/out.txt; echo ${message} >> /mnt/data/out.txt"

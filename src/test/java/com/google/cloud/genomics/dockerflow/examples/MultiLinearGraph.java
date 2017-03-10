@@ -81,7 +81,7 @@ public class MultiLinearGraph {
         .input("message", "hello")
         .outputFile("outputFile")
         .docker("ubuntu")
-        .script("cp ${inputFile} ${outputFile} ; echo ${message} >> ${outputFile}")
+        .script("cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}")
         .build();
   }
 

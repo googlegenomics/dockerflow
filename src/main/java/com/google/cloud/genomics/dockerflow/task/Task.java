@@ -405,26 +405,33 @@ public class Task implements Serializable, GraphItem {
     
     Map<String,String> gcsPaths = new LinkedHashMap<String,String>();
     Map<String,String> localPaths = new LinkedHashMap<String,String>();
+    String mountPoint = null;
+
+    if (defn.getResources() != null &&
+        defn.getResources().getDisks() != null &&
+        !defn.getResources().getDisks().isEmpty()) {
+      mountPoint = defn.getResources().getDisks().get(0).getMountPoint();
+    }
+    if (mountPoint == null) {
+      mountPoint = DockerflowConstants.DEFAULT_MOUNT_POINT;
+    }
     
     // Loop through a copy to avoid concurrent modification
     for (Param p : new ArrayList<Param>(defn.getParams())) {
       String val = args.get(p.getName()) == null ? p.getDefaultValue() : args.get(p.getName());
 
+      // Remember folder and output paths for mkdir -p
+      if (val != null && (p.isFolder() || (p.isFile() && !inputs.contains(p.getName())))) {
+        localPaths.put(p.getName(), p.getLocalCopy().getPath());    	  
+      }
+      
       // Folder copying is done by editing the Docker command, 
       // not by automated file staging
       if (val != null && p.isFolder()) {
         gcsPaths.put(p.getName(), val);
-        localPaths.put(p.getName(), p.getLocalCopy().getPath());
-        
-        // Replace var in user script with local path
-        defn.getDocker().setCmd(
-            defn.getDocker().getCmd().replace(
-                "${" + p.getName() + "}", 
-                DockerflowConstants.DEFAULT_MOUNT_POINT + 
-                    "/" +
-                    p.getLocalCopy().getPath()));
 
         // Turn it into an env var
+        args.set(p.getName(), mountPoint + "/" + p.getLocalCopy().getPath());
         p.setLocalCopy(null);
         p.setType(null);
                 
@@ -474,15 +481,28 @@ public class Task implements Serializable, GraphItem {
     // Prepare commands to copy the folders
     StringBuilder copyInputs = new StringBuilder();
     StringBuilder copyOutputs = new StringBuilder();
+    StringBuilder mkdirs = new StringBuilder();
+
+    for (String name : localPaths.keySet()) {
+      if (gcsPaths.containsKey(name)) {
+        mkdirs.append(
+            String.format(
+                "mkdir -p %s/%s\n",
+                mountPoint,
+                localPaths.get(name)));  
+      } else {
+        mkdirs.append(
+            String.format(
+                "mkdir -p $(dirname %s/%s)\n",
+                mountPoint,
+                localPaths.get(name)));  
+      }
+    }
     
     for (String name : gcsPaths.keySet()) {
       // Copy input folder
       if (inputs.contains(name)) {
         copyInputs.append(
-            String.format(
-                "mkdir -p %s/%s\n",
-                DockerflowConstants.DEFAULT_MOUNT_POINT,
-                localPaths.get(name)) +
             String.format(
                 "\nfor ((i = 0; i < 3; i++)); do\n" +
                     "  if gsutil -m rsync -r %s/ %s/%s; then\n" +
@@ -493,13 +513,13 @@ public class Task implements Serializable, GraphItem {
                     "  fi\n" +
                     "done\n",
                 gcsPaths.get(name),
-                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                mountPoint,
                 localPaths.get(name)));
       // Copy output folder
       } else {
         copyOutputs.append(
             String.format(
-                "\nfor ((i = 0; i < 3; i++)); do\n" +
+                "for ((i = 0; i < 3; i++)); do\n" +
                     "  if gsutil -m rsync -r %s/%s %s/; then\n" +
                     "    break\n" +
                     "  elif ((i == 2)); then\n" +
@@ -507,7 +527,7 @@ public class Task implements Serializable, GraphItem {
                     "    exit 1\n" +
                     "  fi\n" +
                     "done\n",
-                DockerflowConstants.DEFAULT_MOUNT_POINT,
+                mountPoint,
                 localPaths.get(name),
                 gcsPaths.get(name)));
       }
@@ -521,8 +541,15 @@ public class Task implements Serializable, GraphItem {
           copyInputs.toString() + 
           "\n# Run user script\n" +
           defn.getDocker().getCmd() + 
-          "\n# Copy outputs\n" +
+          "\n\n# Copy outputs\n" +
           copyOutputs.toString());
+    }
+    
+    if (!localPaths.isEmpty()) {
+      defn.getDocker().setCmd(
+          "\n# Make directories\n" +
+          mkdirs.toString() +
+          defn.getDocker().getCmd());
     }
   }
 

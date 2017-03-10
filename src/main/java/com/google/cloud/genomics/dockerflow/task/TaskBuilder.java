@@ -163,38 +163,61 @@ public class TaskBuilder {
   }
 
   /**
-   * Declare an input parameter for a local file. The file path will be accessible from the Docker
-   * container as ${name}.
-   *
-   * @param name
-   * @return
+   * Declare an input parameter for a file in GCS. The file will be accessible in the Docker
+   * container at the absolute local path given by ${name}.
    */
   public TaskBuilder inputFile(String name) {
-    return inputFile(name, null, null);
+    return inputPath(name, null, null, false);
   }
 
   /**
-   * Declare an input parameter for a local file. The file path will be accessible from the Docker
-   * container as ${name}.
-   *
-   * @param name
-   * @param localPath
-   * @return
+   * Declare and assign an input parameter for a file in GCS. The file will be accessible in
+   * the Docker container at the absolute local path given by ${name}.
    */
   public TaskBuilder inputFile(String name, String defaultGcsPath) {
-    return inputFile(name, defaultGcsPath, null);
+    return inputPath(name, defaultGcsPath, null, false);
   }
 
   /**
-   * Declare an input parameter for a local file and set a default. The file path will be accessible
-   * from the Docker container as ${name}.
-   *
-   * @param name
-   * @param defaultGcsPath
-   * @param localPath
-   * @return
+   * Declare and assign an input parameter for a file in GCS, explicitly providing a relative
+   * local path. The file will be accessible in the Docker container at the absolute local path
+   * given by ${name}.
    */
   public TaskBuilder inputFile(String name, String defaultGcsPath, String localPath) {
+    return inputPath(name, defaultGcsPath, localPath, false);
+  }
+
+  /**
+   * Declare and assign an input parameter for a folder in GCS. The folder will be accessible in
+   * the Docker container at the absolute local path given by ${name}.
+   */
+  public TaskBuilder inputFolder(String name) {
+    return inputPath(name, null, null, true);
+  }
+
+  /**
+   * Declare and assign an input parameter for a folder in GCS. The folder will be accessible in
+   * the Docker container at the absolute local path given by ${name}.
+   */
+  public TaskBuilder inputFolder(String name, String defaultGcsPath) {
+    return inputPath(name, defaultGcsPath, null, true);
+  }
+
+  /**
+   * Declare and assign an input parameter for a folder in GCS, explicitly providing a relative
+   * local path. The folder will be accessible in the Docker container at the absolute local path
+   * given by ${name}.
+   */
+  public TaskBuilder inputFolder(String name, String defaultGcsPath, String localPath) {
+    return inputPath(name, defaultGcsPath, localPath, true);
+  }
+ 
+  /**
+   * Declare and assign an input parameter for a path in GCS, explicitly providing a relative
+   * local path. The file will be accessible in the Docker container at the absolute local path
+   * given by ${name}. The path can be either a file or a folder.
+   */
+  private TaskBuilder inputPath(String name, String defaultGcsPath, String localPath, boolean isFolder) {
     if (task.getDefn().getInputParameters() == null) {
       task.getDefn().setInputParameters(new LinkedHashSet<Param>());
     }
@@ -204,6 +227,7 @@ public class TaskBuilder {
     p.setName(name);
     p.setLocalCopy(new LocalCopy());
     p.getLocalCopy().setDisk(DockerflowConstants.DEFAULT_DISK_NAME);
+    p.setType(isFolder ? Param.TYPE_FOLDER : Param.TYPE_FILE);
 
     if (defaultGcsPath != null && defaultGcsPath.indexOf("${") < 0 && localPath == null) {
       localPath = FileUtils.localPath(defaultGcsPath);
@@ -215,15 +239,31 @@ public class TaskBuilder {
 
     return this;
   }
-
+  
+  /**
+   * Declare an array of input files. When expanded on the command-line, they will be
+   * delimited. Eg, if the delimiter is " -f " and the array is "gcsPath1,gcsPath2", 
+   * the command line value "-f ${name}" will be expanded as "-f localPath1 -f localPath2".
+   */
   public TaskBuilder inputFileArray(String name, String delimiter) {
     return inputFileArray(name, delimiter, null, null);
   }
 
+  /**
+   * Declare and assign an array of input files. When expanded on the command-line, they will be
+   * delimited. Eg, if the delimiter is " -f " and the array is "gcsPath1,gcsPath2", 
+   * the command line value "-f ${name}" will be expanded as "-f localPath1 -f localPath2".
+   */
   public TaskBuilder inputFileArray(String name, String delimiter, String value) {
     return inputFileArray(name, delimiter, new String[] {value}, null);
   }
-
+  
+  /**
+   * Declare and assign an array of input files with an explicit local path. 
+   * When expanded on the command-line, they will be
+   * delimited. Eg, if the delimiter is " -f " and the array is "gcsPath1,gcsPath2", 
+   * the command line value "-f ${name}" will be expanded as "-f localPath1 -f localPath2".
+   */
   public TaskBuilder inputFileArray(
       String name, String delimiter, String[] defaultGcsPaths, String localPath) {
     if (task.getDefn().getInputParameters() == null) {
@@ -257,38 +297,61 @@ public class TaskBuilder {
   }
 
   /**
-   * Declare an output parameter for a local file. The file path will be accessible from the Docker
-   * container as ${name}.
-   *
-   * @param name
-   * @return
+   * Declare an output parameter for a file in GCS. The file will be accessible in the Docker
+   * container at the absolute local path given by ${name}.
    */
   public TaskBuilder outputFile(String name) {
-    return outputFile(name, null, null);
+    return outputPath(name, null, null, false);
   }
 
   /**
-   * Declare an output parameter for a local file. The file path will be accessible from the Docker
-   * container as ${name}.
-   *
-   * @param name
-   * @param localPath
-   * @return
+   * Declare and assign an output parameter for a file in GCS. The file will be accessible in
+   * the Docker container at the absolute local path given by ${name}.
    */
   public TaskBuilder outputFile(String name, String defaultGcsPath) {
-    return outputFile(name, defaultGcsPath, null);
+    return outputPath(name, defaultGcsPath, null, false);
   }
 
   /**
-   * Declare an output parameter for a local file and set a default. The file path will be
-   * accessible from the Docker container as ${name}.
-   *
-   * @param name
-   * @param defaultGcsPath
-   * @param localPath
-   * @return
+   * Declare and assign an output parameter for a file in GCS, explicitly providing a relative
+   * local path. The file will be accessible in the Docker container at the absolute local path
+   * given by ${name}.
    */
   public TaskBuilder outputFile(String name, String defaultGcsPath, String localPath) {
+	return outputPath(name, defaultGcsPath, localPath, false);
+  }
+
+  /**
+   * Declare an output parameter for a folder in GCS. The folder will be accessible in the Docker
+   * container at the absolute local path given by ${name}.
+   */
+  public TaskBuilder outputFolder(String name) {
+    return outputPath(name, null, null, true);
+  }
+
+  /**
+   * Declare and assign an output parameter for a folder in GCS. The folder will be accessible in
+   * the Docker container at the absolute local path given by ${name}.
+   */
+  public TaskBuilder outputFolder(String name, String defaultGcsPath) {
+    return outputPath(name, defaultGcsPath, null, true);
+  }
+
+  /**
+   * Declare and assign an output parameter for a folder in GCS, explicitly providing a relative
+   * local path. The folder will be accessible in the Docker container at the absolute local path
+   * given by ${name}.
+   */
+  public TaskBuilder outputFolder(String name, String defaultGcsPath, String localPath) {
+	return outputPath(name, defaultGcsPath, localPath, true);
+  }
+  
+  /**
+   * Declare and assign an output parameter for a path in GCS, explicitly providing a relative
+   * local path. The file will be accessible in the Docker container at the absolute local path
+   * given by ${name}. The path can be either a file or a folder.
+   */
+  private TaskBuilder outputPath(String name, String defaultGcsPath, String localPath, boolean isFolder) {
     if (task.getDefn().getOutputParameters() == null) {
       task.getDefn().setOutputParameters(new LinkedHashSet<Param>());
     }
@@ -303,20 +366,37 @@ public class TaskBuilder {
     }
     p.getLocalCopy().setPath(localPath);
     p.setDefaultValue(defaultGcsPath);
+    p.setType(isFolder ? Param.TYPE_FOLDER : Param.TYPE_FILE);
 
     task.getDefn().getOutputParameters().add(p);
 
     return this;
   }
 
+  /**
+   * Declare an array of output files. When expanded on the command-line, they will be
+   * delimited. Eg, if the delimiter is " -f " and the array is "gcsPath1,gcsPath2", 
+   * the command line value "-f ${name}" will be expanded as "-f localPath1 -f localPath2".
+   */
   public TaskBuilder outputFileArray(String name, String delimiter) {
     return outputFileArray(name, delimiter, null, null);
   }
 
+  /**
+   * Declare and assign an array of output files. When expanded on the command-line, they will be
+   * delimited. Eg, if the delimiter is " -f " and the array is "gcsPath1,gcsPath2", 
+   * the command line value "-f ${name}" will be expanded as "-f localPath1 -f localPath2".
+   */
   public TaskBuilder outputFileArray(String name, String delimiter, String value) {
     return outputFileArray(name, delimiter, new String[] {value}, null);
   }
 
+  /**
+   * Declare and assign an array of input files with an explicit local path. 
+   * When expanded on the command-line, they will be
+   * delimited. Eg, if the delimiter is " -f " and the array is "gcsPath1,gcsPath2", 
+   * the command line value "-f ${name}" will be expanded as "-f localPath1 -f localPath2".
+   */
   public TaskBuilder outputFileArray(
       String name, String delimiter, String[] defaultGcsPaths, String localPath) {
     if (task.getDefn().getOutputParameters() == null) {
@@ -437,11 +517,6 @@ public class TaskBuilder {
   public TaskBuilder logging(String path) {
     task.getArgs().setLogging(new Logging());
     task.getArgs().getLogging().setGcsPath(path);
-    return this;
-  }
-
-  public TaskBuilder parallelizeBy(String inputName) {
-    task.setScatterBy(inputName);
     return this;
   }
 
