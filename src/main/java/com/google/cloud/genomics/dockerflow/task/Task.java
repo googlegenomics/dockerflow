@@ -405,12 +405,13 @@ public class Task implements Serializable, GraphItem {
     
     Map<String,String> gcsPaths = new LinkedHashMap<String,String>();
     Map<String,String> localPaths = new LinkedHashMap<String,String>();
-    String mountPoint;
+    String mountPoint = null;
     if (defn.getResources() != null &&
         defn.getResources().getDisks() != null &&
         !defn.getResources().getDisks().isEmpty()) {
       mountPoint = defn.getResources().getDisks().get(0).getMountPoint();
-    } else {
+    }
+    if (mountPoint == null) {
       mountPoint = DockerflowConstants.DEFAULT_MOUNT_POINT;
     }
     
