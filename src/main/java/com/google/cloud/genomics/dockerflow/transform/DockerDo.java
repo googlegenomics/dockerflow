@@ -115,18 +115,24 @@ public class DockerDo
       pc = pc.apply(scatter(task));
     }
 
-    // Run the Docker task
-    pc = pc.apply(run(task));
+    // The task is not scatter or gather only
+    if (task.getDefn() != null &&
+        task.getDefn().getDocker() != null &&
+        task.getDefn().getDocker().getCmd() != null) {
 
-    // Add retries
-    if (task.getArgs() instanceof WorkflowArgs
-        && ((WorkflowArgs) task.getArgs()).getMaxTries() > 1) {
-      pc = pc.apply(retry(task));
+      // Run the Docker task
+      pc = pc.apply(run(task));
+
+      // Add retries
+      if (task.getArgs() instanceof WorkflowArgs
+          && ((WorkflowArgs) task.getArgs()).getMaxTries() > 1) {
+        pc = pc.apply(retry(task));
+      }
+
+      // Pass along the log paths and other outputs
+      pc = pc.apply(outputs(task));
     }
-
-    // Pass along the log paths and other outputs
-    pc = pc.apply(outputs(task));
-
+    
     // Gather
     if (task.getGatherBy() != null) {
       LOG.debug("gatherBy=" + task.getGatherBy());
