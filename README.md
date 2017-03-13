@@ -244,8 +244,8 @@ The workflow file is:
     - defnFile: step-two.yaml
     - defnFile: step-one.yaml
 
-In this example, we've also added an explicit graph to clarify that taskOne runs
-before taskTwo. This is necessary now only because the steps list them in the reverse order.
+In this example, we've also added an explicit graph to clarify that stepOne runs
+before stepTwo. This is necessary now only because the steps list them in the reverse order.
 
 The first step is saved as `step-one.yaml`:
 
