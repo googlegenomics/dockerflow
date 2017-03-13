@@ -231,8 +231,8 @@ The workflow file is:
     defn:
       name: GoodbyeHello
     graph:
-    - taskTwo
     - taskOne
+    - taskTwo
 	args:
 	  inputs:
 	    stepOne.inputFile: MY-INPUT-FILE
