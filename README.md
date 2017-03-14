@@ -14,6 +14,7 @@ Google Cloud Platform using Dataflow's fully managed service and web UI.
 Dockerflow workflows can be defined in [YAML](http://yaml.org) files, or by writing
 Java code. Examples of workflows defined in YAML can be found in
 
+*   [examples](examples)
 *   [src/test/resources](src/test/resources)
 
 Examples of workflows defined in Java can be found in
@@ -21,7 +22,7 @@ Examples of workflows defined in Java can be found in
 *   [examples](examples)
 *   [src/test/java/com/google/cloud/genomics/dockerflow/examples](src/test/java/com/google/cloud/genomics/dockerflow/examples)
 
-You can run a batch of workflows at once by providing a csv file with one row per
+You can run a batch of workflows at once by providing a CSV file with one row per
 workflow to define the parameters.
 
 ## Why Dockerflow?
@@ -64,6 +65,8 @@ Workflow Language]
 3.  [Install the Google Cloud SDK](https://cloud.google.com/sdk/) and run
 
         gcloud init
+        gcloud auth login
+        gcloud auth application-default login
 
 ## Getting started
 
@@ -172,41 +175,113 @@ used by the [Pipelines API](https://cloud.google.com/genomics/v1alpha2/pipelines
 ### Sequential workflows
 
 The simplest multi-step workflow consists of a series of steps in linear sequence.
-For example, save this text as `two-steps.yaml`:
+For example, save this text as `hello-goodbye.yaml`:
+
+	defn:
+	  name: HelloGoodbye
+	args:
+	  inputs:
+	    stepOne.inputFile: MY-INPUT-FILE
+	    stepTwo.inputFile: ${stepOne.outputFile}
+	  outputs:
+	    stepOne.outputFile: output1.txt
+	    stepTwo.outputFile: output2.txt
+	steps: 
+	- defn:
+	    name: stepOne
+	    inputParameters:
+	    - name: inputFile
+	      type: file
+	    - name: message
+	      defaultValue: hello
+	    outputParameters:
+	    - name: outputFile
+	      type: file
+	    docker:
+	      imageName: ubuntu
+	      cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
+	- defn:
+	    name: stepTwo
+	    inputParameters:
+	    - name: inputFile
+	      type: file
+	    - name: message
+	      defaultValue: goodbye
+	    outputParameters:
+	    - name: outputFile
+	      type: file
+	    docker:
+	      imageName: ubuntu
+	      cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
+
+This workflow contains two steps that will run in sequence. The output file
+from the first step is passed as the input file to the second step.
+
+To run the workflow, set `MY-INPUT-FILE`. You can do it on the command-line
+by running:
+
+        dockerflow --project=MY-PROJECT \
+            --workflow-file=src/test/resources/hellogoodbye.yaml \
+            --workspace=gs://MY-BUCKET/MY-PATH \
+            --input=inputFile=gs://MY-BUCKET/MY-INPUT-FILE
+
+The individual steps can also be defined in separate files for modularity. 
+The workflow file is:
 
     defn:
-      name: TwoSteps
-    steps:
+      name: GoodbyeHello
+    graph:
+    - stepTwo
+    - stepOne
+    args:
+      inputs:
+        stepTwo.inputFile: MY-INPUT-FILE
+        stepOne.inputFile: ${stepTwo.outputFile}
+      outputs:
+        stepTwo.outputFile: output2.txt
+        stepOne.outputFile: output1.txt
+    steps: 
     - defnFile: step-one.yaml
     - defnFile: step-two.yaml
 
-This workflow contains two steps. The steps will be loaded from files, located
-relative to the `workspace` path provided on the command-line.
+In this example, we've also added an explicit graph to clarify that stepTwo runs
+before stepOne. This is necessary now only because the steps list them in the reverse order.
 
-The two steps will run in sequence. One common use is to pass the output file
-from the first step as the input file to the second step.
+The first step is saved as `step-one.yaml`:
 
-Here's an equivalent workflow that's a little more verbose. The extra `graph` section
-lets you run the steps in a different order.
+    name: stepOne
+    inputParameters:
+    - name: inputFile
+      type: file
+    - name: message
+      defaultValue: hello
+    outputParameters:
+    - name: outputFile
+      type: file
+    docker:
+      imageName: ubuntu
+      cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
 
-    defn:
-      name: TwoSteps
-    graph:
-    - taskTwo
-    - taskOne
-    steps:
-    - defn:
-        name: taskOne
-      defnFile: step-one.yaml
-    - defn:
-        name: taskTwo
-      defnFile: step-two.yaml
+The second step is saved as `step-two.yaml`:
 
-Now `taskTwo` will run before `taskOne`.
+    name: stepTwo
+    inputParameters:
+    - name: inputFile
+      type: file
+    - name: message
+      defaultValue: goodbye
+    outputParameters:
+    - name: outputFile
+      type: file
+    docker:
+      imageName: ubuntu
+      cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
 
-Note that we've also given the subtasks explicit names. These can be different
-from whatever's mentioned in the `defnFile` definition; the values in the
-workflow definition will override those contained in the task file.
+You can pass the parameters from a local file rather than on the command-line
+by creating a parameters YAML file:
+
+    inputs:
+    - inputFile: gs://MY-INPUT-FILE
 
 ### Parallel workflows
 
