@@ -233,19 +233,19 @@ The workflow file is:
     graph:
     - stepTwo
     - stepOne
-	args:
-	  inputs:
-	    stepTwo.inputFile: MY-INPUT-FILE
-	    stepOne.inputFile: ${stepTwo.outputFile}
-	  outputs:
-	    stepTwo.outputFile: output2.txt
-	    stepOne.outputFile: output1.txt
-	steps: 
+    args:
+      inputs:
+        stepTwo.inputFile: MY-INPUT-FILE
+        stepOne.inputFile: ${stepTwo.outputFile}
+      outputs:
+        stepTwo.outputFile: output2.txt
+        stepOne.outputFile: output1.txt
+    steps: 
     - defnFile: step-one.yaml
     - defnFile: step-two.yaml
 
-In this example, we've also added an explicit graph to clarify that stepOne runs
-before stepTwo. This is necessary now only because the steps list them in the reverse order.
+In this example, we've also added an explicit graph to clarify that stepTwo runs
+before stepOne. This is necessary now only because the steps list them in the reverse order.
 
 The first step is saved as `step-one.yaml`:
 
