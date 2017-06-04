@@ -87,19 +87,7 @@ Run the following steps on your laptop or local workstation:
         export PATH="${PATH}":"${DOCKERFLOW_HOME}/bin"
         chmod +x bin/*
 
-4.  Run a sample workflow:
-
-        dockerflow --project=MY-PROJECT \
-            --workflow-file=src/test/resources/linear-graph.yaml \
-            --workspace=gs://MY-BUCKET/MY-PATH \
-            --runner=DirectPipelineRunner
-
-Set `MY-PROJECT` to your cloud project name, and set `MY-BUCKET` and `MY-PATH`
-to your cloud bucket and folder.
-
-The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
-will block until the workflow completes. To run in your cloud project, you can
-remove the `--runner` option to use the default Dataflow runner.
+4.  Run the [hello, world example](examples/hello/README.md) workflow.
 
 ## Docker and Dataflow vs custom scripts
 
