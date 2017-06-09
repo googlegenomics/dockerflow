@@ -92,14 +92,24 @@ Run the following steps on your laptop or local workstation:
         dockerflow --project=MY-PROJECT \
             --workflow-file=src/test/resources/linear-graph.yaml \
             --workspace=gs://MY-BUCKET/MY-PATH \
+	    --input BASE_DIR=gs://MY-BUCKET/MY-PATH/MY-INPUT-FILE.txt
             --runner=DirectPipelineRunner
 
 Set `MY-PROJECT` to your cloud project name, and set `MY-BUCKET` and `MY-PATH`
-to your cloud bucket and folder.
+to your cloud bucket and folder. You'll need to have a text file in Cloud Storage
+as well, here called `MY-INPUT-FILE.txt`. You can copy one from
+[src/test/resources/input-one.txt](src/test/resources/input-one.txt):
 
-The example will run Dataflow locally with the `DirectPipelineRunner`. Execution
-will block until the workflow completes. To run in your cloud project, you can
-remove the `--runner` option to use the default Dataflow runner.
+        gsutil cp src/test/resources/input-one.txt gs://MY-BUCKET/MY-PATH
+
+The example will run Dataflow locally with the `DirectPipelineRunner`, for
+orchestration. It will spin up VMs remotely in Google Cloud to run the
+individual tasks in Docker. Execution of the local Dataflow runner will block
+until the workflow completes. The DirectPipelineRunner is useful for
+debugging, because you'll see all of the log messages output to your shell.
+
+To run in your cloud project, and see the pretty Dataflow UI in Google Cloud
+Console, you can remove the `--runner`option to use the default Dataflow runner.
 
 ## Docker and Dataflow vs custom scripts
 
@@ -149,275 +159,18 @@ reference tasks that are defined in separate YAML files.
 A workflow is a recursive format, meaning that a workflow can contain multiple
 steps, and each of the steps can be a workflow.
 
-### Hello, world
+## Hello, world
 
-The best way to get started with Dockerflow is to look at a real example.
+Dockerflow has lots of features for creating complex, real-world workflows.
+The best way to get started with your own workflows is to look at the
+[examples](examples). 
 
-    defn:
-      name: HelloWorkflow
-    steps:
-    - defn:
-        name: Hello
-        docker:
-          imageName: ubuntu
-          cmd: echo “Hello, world”
+The [hello, world](examples/hello) example shows the most basic workflow
+in YAML and Java versions.
 
-You can save this as `hello.yaml` and run it as above.
-
-Let's dissect the pieces -- even if there aren't that many. The overall workflow
-has a name: `HelloWorkflow`. It contains one step, which runs an `echo` command
-in a stock Ubuntu Docker image.
-
-The `defn` section for the workflow `steps` is a superset of the
-[Pipeline object](https://cloud.google.com/genomics/reference/rest/v1alpha2/pipelines#Pipeline)
-used by the [Pipelines API](https://cloud.google.com/genomics/v1alpha2/pipelines).
-
-### Sequential workflows
-
-The simplest multi-step workflow consists of a series of steps in linear sequence.
-For example, save this text as `hello-goodbye.yaml`:
-
-	defn:
-	  name: HelloGoodbye
-	args:
-	  inputs:
-	    stepOne.inputFile: MY-INPUT-FILE
-	    stepTwo.inputFile: ${stepOne.outputFile}
-	  outputs:
-	    stepOne.outputFile: output1.txt
-	    stepTwo.outputFile: output2.txt
-	steps: 
-	- defn:
-	    name: stepOne
-	    inputParameters:
-	    - name: inputFile
-	      type: file
-	    - name: message
-	      defaultValue: hello
-	    outputParameters:
-	    - name: outputFile
-	      type: file
-	    docker:
-	      imageName: ubuntu
-	      cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
-	- defn:
-	    name: stepTwo
-	    inputParameters:
-	    - name: inputFile
-	      type: file
-	    - name: message
-	      defaultValue: goodbye
-	    outputParameters:
-	    - name: outputFile
-	      type: file
-	    docker:
-	      imageName: ubuntu
-	      cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
-
-This workflow contains two steps that will run in sequence. The output file
-from the first step is passed as the input file to the second step.
-
-To run the workflow, set `MY-INPUT-FILE`. You can do it on the command-line
-by running:
-
-        dockerflow --project=MY-PROJECT \
-            --workflow-file=src/test/resources/hellogoodbye.yaml \
-            --workspace=gs://MY-BUCKET/MY-PATH \
-            --input=inputFile=gs://MY-BUCKET/MY-INPUT-FILE
-
-The individual steps can also be defined in separate files for modularity. 
-The workflow file is:
-
-    defn:
-      name: GoodbyeHello
-    graph:
-    - stepTwo
-    - stepOne
-    args:
-      inputs:
-        stepTwo.inputFile: MY-INPUT-FILE
-        stepOne.inputFile: ${stepTwo.outputFile}
-      outputs:
-        stepTwo.outputFile: output2.txt
-        stepOne.outputFile: output1.txt
-    steps: 
-    - defnFile: step-one.yaml
-    - defnFile: step-two.yaml
-
-In this example, we've also added an explicit graph to clarify that stepTwo runs
-before stepOne. This is necessary now only because the steps list them in the reverse order.
-
-The first step is saved as `step-one.yaml`:
-
-    name: stepOne
-    inputParameters:
-    - name: inputFile
-      type: file
-    - name: message
-      defaultValue: hello
-    outputParameters:
-    - name: outputFile
-      type: file
-    docker:
-      imageName: ubuntu
-      cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
-
-The second step is saved as `step-two.yaml`:
-
-    name: stepTwo
-    inputParameters:
-    - name: inputFile
-      type: file
-    - name: message
-      defaultValue: goodbye
-    outputParameters:
-    - name: outputFile
-      type: file
-    docker:
-      imageName: ubuntu
-      cmd: "cp ${inputFile} ${outputFile}; echo ${message} >> ${outputFile}"
-
-You can pass the parameters from a local file rather than on the command-line
-by creating a parameters YAML file:
-
-    inputs:
-    - inputFile: gs://MY-INPUT-FILE
-
-### Parallel workflows
-
-Sometimes you want to run a step in parallel with different values. One example
-is running the same task on multiple input files. Another is passing a series of
-variable values for a parameter sweep.
-
-The `scatterBy` attribute lets you choose an input or output parameter for that
-purpose. The values will be split on new lines. For example:
-
-    defn:
-      name: FileParallel
-    args:
-      inputs:
-        parallelTask.inputFile: |
-          file1.txt
-          file2.txt
-    steps:
-    - defn:
-        name: parallelTask
-      defnFile: step-one.yaml
-      scatterBy: inputFile
-
-The task will be run twice in parallel, once with `file1.txt` and once with
-`file2.txt`. Each task's outputs will be stored in a subdirectory,
-`parallelTask/1` and `parallelTask/2`.
-
-If you have a large number of values you'd like to run at once, you can pass
-them in from a file, using the `--inputs-from-file` option.
-
-    dockerflow \
-        --project=MY_PROJECT \
-        --workflow-file=src/test/resources/parallel-graph.yaml \
-        --workspace=gs://MY-BUCKET/MY-PATH \
-        --inputs-from-file=parallelTask.inputFile=many_files.txt
-
-The file `many_files.txt` can contain many file paths. All will run, with
-retries, each on a separate VM, until complete. Note that to set the value of
-the `inputFile` for subtask named `parallelTask`, you pass the input variable
-name `parallelTask.inputFile` on the command-line, because the task definition
-includes the task name, `parallelTask`.
-
-See the section on [passing parameters](#passing-parameters) for more details.
-
-There's also a corresponding `gatherBy` attribute so that you can gather the
-outputs of multiple parallel tasks into arrays of file paths. For an example, see:
-
-*   [src/test/resources/gather-graph.yaml](src/test/resources/gather-graph.yaml)
-
-### Branching workflows
-
-If file-parallel workflow steps aren't complex enough, you can write a branching
-workflow. Each branch will execute in parallel.
-
-    defn:
-      name: Branching
-    graph:
-    - firstStep
-    - BRANCH:
-      - branchA
-      - branchB
-    steps:
-    - defn:
-        name: firstStep
-      defnFile: task-one.yaml
-    - defn:
-        name: branchA
-      defnFile: task-two.yaml
-    - defn:
-        name: branchB
-      defnFile: task-three.yaml
-
-You'll notice that there's a new keyword, `BRANCH`. It indicates that tasks
-should be executed in parallel. In this example, `firstStep` runs, then
-`branchA` and `branchB` run in parallel.
-
-## Passing parameters
-
-Now how do you pass parameters to the tasks? You can certainly set them in the
-individual task definition files, as described in the [Pipelines API Guide]
-(https://cloud.google.com/genomics/v1alpha2/pipelines-api-guide).
-
-You can also set them in the workflow definition file.
-
-    defn:
-      name: TwoSteps
-    steps:
-    - defn:
-        name: stepOne
-      defnFile: step-one.yaml
-      args:
-        inputs:
-          inputFile: input-one.txt
-        outputs:
-          outputFile: output-one.txt
-    - defn:
-        name: stepTwo
-      defnFile: step-two.yaml
-      args:
-        inputs:
-          inputFile: output-one.txt
-        outputs:
-          outputFile: output-two.txt
-
-If it's clearer, you can set the parameters at the top of the workflow
-definition:
-
-    defn:
-      name: TwoSteps
-    args:
-      inputs:
-        stepOne.inputFile: input-one.txt
-        stepTwo.inputFile: output-one.txt
-      outputs:
-        stepOne.outputFile: output-one.txt
-        stepTwo.outputFile: output-two.txt
-    steps:
-    - defnFile: step-one.yaml
-    - defnFile: step-two.yaml
-
-In this case, the input and output names must be prefixed by the name of the
-step. Since the definition (defn) of each task step is loaded from file, the
-task names in the included files will be used.
-
-Finally, you can set parameters from the command-line:
-
-    dockerflow --project=MY_PROJECT \
-        --workflow-file=src/test/resources/parallel-graph.yaml \
-        --workspace=gs://MY-BUCKET/MY-PATH \
-        --outputs=stepOne.outputFile=output-one.txt,\
-            stepTwo.outputFile=output-two.txt \
-        --inputs=stepTwo.inputFile=output-one.txt
-
-To set the value of the `inputFile` for subtask named `stepOne`, you pass the
-input variable name `stepOne.inputFile` on the command-line, because the task
-name specified is `stepOne`.
+All of the advanced features can be seen in the more complex
+[GATK](examples/gatk) example. Again, it offers both YAML and Java
+versions. You'll see pretty much the full range of functionality.
 
 ## Testing
 
