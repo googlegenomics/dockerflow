@@ -92,7 +92,7 @@ Run the following steps on your laptop or local workstation:
         dockerflow --project=MY-PROJECT \
             --workflow-file=src/test/resources/linear-graph.yaml \
             --workspace=gs://MY-BUCKET/MY-PATH \
-	    --input BASE_DIR=gs://MY-BUCKET/MY-PATH/MY-INPUT-FILE.txt
+            --input BASE_DIR=gs://MY-BUCKET/MY-PATH/MY-INPUT-FILE.txt
             --runner=DirectPipelineRunner
 
 Set `MY-PROJECT` to your cloud project name, and set `MY-BUCKET` and `MY-PATH`
@@ -100,7 +100,7 @@ to your cloud bucket and folder. You'll need to have a text file in Cloud Storag
 as well, here called `MY-INPUT-FILE.txt`. You can copy one from
 [src/test/resources/input-one.txt](src/test/resources/input-one.txt):
 
-        gsutil cp src/test/resources/input-one.txt gs://MY-BUCKET/MY-PATH
+        gsutil cp src/test/resources/input-one.txt gs://MY-BUCKET/MY-PATH/input-one.txt
 
 The example will run Dataflow locally with the `DirectPipelineRunner`, for
 orchestration. It will spin up VMs remotely in Google Cloud to run the
@@ -109,7 +109,7 @@ until the workflow completes. The DirectPipelineRunner is useful for
 debugging, because you'll see all of the log messages output to your shell.
 
 To run in your cloud project, and see the pretty Dataflow UI in Google Cloud
-Console, you can remove the `--runner`option to use the default Dataflow runner.
+Console, you can remove the `--runner` option to use the default Dataflow runner.
 
 ## Docker and Dataflow vs custom scripts
 
@@ -166,7 +166,7 @@ The best way to get started with your own workflows is to look at the
 [examples](examples). 
 
 The [hello, world](examples/hello) example shows the most basic workflow
-in YAML and Java versions.
+in both YAML and Java.
 
 All of the advanced features can be seen in the more complex
 [GATK](examples/gatk) example. Again, it offers both YAML and Java
