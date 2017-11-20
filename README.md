@@ -2,6 +2,22 @@
 
 This is not an official Google product.
 
+# Update
+
+As of 11 Nov 2017, Dockerflow is no longer actively maintained and will not be enhanced with new
+features.
+
+For multi-step batch workflows consisting of Docker tasks, we now recommend running in the cloud
+using:
+
+*   [dsub](https://github.com/googlegenomics/dsub), a command-line batch submission tool
+
+To run multi-step workflows with dsub, you can create a bash or python script with multiple dsub
+calls. Execution graphs can be constructed using dsub's task dependency functionality.
+
+For any Dockerflow functionality that is not satisfied by dsub, please
+[file an issue](https://github.com/googlegenomics/dsub/issues) in the dsub repository.
+
 # Dockerflow
 
 Dockerflow makes it easy to run a multi-step workflow of Docker tasks using
