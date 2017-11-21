@@ -13,7 +13,8 @@ using:
 *   [dsub](https://github.com/googlegenomics/dsub), a command-line batch submission tool
 
 To run multi-step workflows with dsub, you can create a bash or python script with multiple dsub
-calls. Execution graphs can be constructed using dsub's task dependency functionality.
+calls. Execution graphs can be constructed using dsub's
+[job control functionality](https://github.com/googlegenomics/dsub/blob/master/docs/job_control.md).
 
 For any Dockerflow functionality that is not satisfied by dsub, please
 [file an issue](https://github.com/googlegenomics/dsub/issues) in the dsub repository.
